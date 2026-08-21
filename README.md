@@ -3,7 +3,7 @@
 Companion code for the paper:
 
 > **Routing Through Traffic Signals: The Value, Depth, and Accuracy of Phase Information**
-> Junbo Lian, working paper, 2026.
+> Junbo Jacob Lian, working paper, 2026.
 
 Navigation systems route with traffic signals summarized as static average turn
 penalties; real-time phase information is used only for display and speed advisory.
