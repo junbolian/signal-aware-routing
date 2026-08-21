@@ -1,0 +1,5 @@
+matplotlib>=3.7
+# Optional, for the SUMO experiments:
+# eclipse-sumo
+# sumolib
+# traci

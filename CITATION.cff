@@ -1,0 +1,16 @@
+cff-version: 1.2.0
+message: "If you use this code, please cite the paper below."
+title: "Signal-Aware Routing"
+authors:
+  - family-names: Lian
+    given-names: Junbo
+year: 2026
+license: MIT
+preferred-citation:
+  type: unpublished
+  title: "Routing Through Traffic Signals: The Value, Depth, and Accuracy of Phase Information"
+  authors:
+    - family-names: Lian
+      given-names: Junbo
+  year: 2026
+  notes: "Working paper"
