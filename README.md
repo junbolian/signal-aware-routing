@@ -122,7 +122,7 @@ MIT. See `LICENSE`.
 
 ```bibtex
 @unpublished{lian2026signals,
-  author = {Lian, Junbo},
+  author = {Lian, Junbo Jacob},
   title  = {Routing Through Traffic Signals: The Value, Depth, and Accuracy of Phase Information},
   note   = {Working paper},
   year   = {2026}
