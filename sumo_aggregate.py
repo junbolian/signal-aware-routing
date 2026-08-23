@@ -22,8 +22,8 @@ def model_pred(m,t0):
     p,_=sr.td_route(ANET,TM,ORIG,DEST,t0)
     return sr.evaluate(ANET,TM,p,t0)["time"]
 
-emp=json.load(open("/home/claude/sumo_results/empty.json"))
-emp["TDOPT_replan"]=json.load(open("/home/claude/sumo_results/empty_one_TDOPT_replan.json"))
+emp=json.load(open("sumo_results/empty.json"))
+emp["TDOPT_replan"]=json.load(open("sumo_results/empty_one_TDOPT_replan.json"))
 methods=["STATIC","GREEDY","LA1","TDOPT_open","TDOPT_replan"]
 dif=[s-model_pred("TDOPT_replan",t0) for s,t0 in zip(emp["TDOPT_replan"],T0S)]
 delta=sum(dif)/len(dif)/13.0
@@ -35,7 +35,7 @@ for m in methods:
     print(f"  {m:12s} sumo {[int(x) for x in emp[m]]}  dev after calib {dm:+5.1f}%+-{dci:.1f}")
 
 mod={}
-for f in glob.glob("/home/claude/sumo_results/mod_*.json"):
+for f in glob.glob("sumo_results/mod_*.json"):
     parts=f.split("/")[-1][:-5].split("_")
     seed=parts[-1]; meth="_".join(parts[1:-1])
     mod.setdefault(meth,{})[int(seed)]=json.load(open(f))
@@ -67,7 +67,7 @@ for den in (25,15,10):
         for m in ("STATIC","LA1","TDOPT_replan"):
             src[m]={sd:mod[m][sd] for sd in (11,12,13,14)}
     else:
-        for f in glob.glob(f"/home/claude/sumo_results/dem{den}_*.json"):
+        for f in glob.glob(f"sumo_results/dem{den}_*.json"):
             parts=f.split("/")[-1][:-5].split("_")
             seed=parts[-1]; meth="_".join(parts[1:-1])
             src.setdefault(meth,{})[int(seed)]=json.load(open(f))

@@ -103,5 +103,5 @@ if __name__ == "__main__":
     plt.xlabel("Lookahead depth k"); plt.ylabel("Gap vs TD-OPT (%)")
     plt.title("Depth and accuracy of phase information (hetero, N=8, n=320)")
     plt.legend(fontsize=8); plt.xticks(ks); plt.tight_layout()
-    plt.savefig("/home/claude/fig6_lookahead_noisy.png",dpi=150)
+    plt.savefig("figures/fig6_lookahead_noisy.png",dpi=150)
     print("saved fig6")

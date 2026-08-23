@@ -145,5 +145,5 @@ if __name__ == "__main__":
     plt.legend(fontsize=8)
     plt.xticks([0, 1, 2, 3])
     plt.tight_layout()
-    plt.savefig("/home/claude/fig5_lookahead.png", dpi=150)
+    plt.savefig("figures/fig5_lookahead.png", dpi=150)
     print("\nsaved fig5")

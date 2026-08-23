@@ -445,7 +445,7 @@ def summarize(rows, label, out):
 def main():
     C, gs, gl = 120.0, 40.0, 20.0
     n_dep = 8
-    raw_path = "/home/claude/raw_results.csv"
+    raw_path = "raw_results.csv"
     fields = ["scenario", "N", "net", "t0", "method", "sigma", "time", "wait",
               "stops", "lefts", "rights", "links", "away"]
     f = open(raw_path, "w", newline="")
@@ -485,7 +485,7 @@ def main():
         summary.append(dict(scenario="VOI", method=f"TD-NOISY(s={sg})",
                             mean_time=round(m, 2), ci_time=round(ci, 2)))
 
-    with open("/home/claude/summary.csv", "w", newline="") as sf:
+    with open("summary.csv", "w", newline="") as sf:
         sw = csv.DictWriter(sf, fieldnames=sorted({k for d in summary for k in d}))
         sw.writeheader()
         for d in summary:
@@ -504,7 +504,7 @@ def main():
     plt.ylabel("Mean travel time (s)")
     plt.title("8x8 grid, random offsets, RTOR on (n=480, 95% CI)")
     plt.tight_layout()
-    plt.savefig("/home/claude/fig1_base_methods.png", dpi=150)
+    plt.savefig("figures/fig1_base_methods.png", dpi=150)
     plt.close()
 
     plt.figure(figsize=(6, 4))
@@ -520,7 +520,7 @@ def main():
     plt.ylabel("Mean realized travel time (s)")
     plt.title("Value of signal-timing information (N=8)")
     plt.tight_layout()
-    plt.savefig("/home/claude/fig2_voi.png", dpi=150)
+    plt.savefig("figures/fig2_voi.png", dpi=150)
     plt.close()
 
     plt.figure(figsize=(6, 4))
@@ -538,7 +538,7 @@ def main():
     plt.title("Myopic and static gaps vs network size")
     plt.legend()
     plt.tight_layout()
-    plt.savefig("/home/claude/fig3_gap_vs_size.png", dpi=150)
+    plt.savefig("figures/fig3_gap_vs_size.png", dpi=150)
     plt.close()
 
     print("\nDone. Files: raw_results.csv, summary.csv, fig1..fig3")

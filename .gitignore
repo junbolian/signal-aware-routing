@@ -7,3 +7,5 @@ __pycache__/
 *.blg
 *.log
 *.out
+*.rou.xml
+*.net.xml

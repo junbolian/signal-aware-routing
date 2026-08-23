@@ -145,5 +145,5 @@ plt.bar(order,ys,yerr=es,capsize=4,
 plt.ylabel("Gap vs TD-OPT (%)")
 plt.title("Optimal policy under unknown offsets (MDP) vs lookahead ladder")
 plt.xticks(rotation=30,fontsize=8); plt.tight_layout()
-plt.savefig("/home/claude/fig7_mdp.png",dpi=150)
+plt.savefig("figures/fig7_mdp.png",dpi=150)
 print("saved fig7")

@@ -1,19 +1,19 @@
 """Chunked SUMO runner. Usage:
   python3 sumo_runner.py empty
   python3 sumo_runner.py mod <METHOD> <seed>
-Writes JSON results to /home/claude/sumo_results/."""
+Writes JSON results to sumo_results/."""
 import os, sys, math, json, random, heapq
 import sumo, sumolib, traci
 import signal_routing as sr
 from lookahead import static_V, la_route
 
 SH=sumo.SUMO_HOME; SUMO_BIN=os.path.join(SH,"bin","sumo")
-NETF="/home/claude/grid8.net.xml"
+NETF="grid8.net.xml"
 C,GS,GL=120.0,40.0,20.0
 TM=sr.Timing(C=C,gs=GS,gl=GL,straight_first=True,rtor=True)
 N=8; ORIG,DEST=(7,0),(0,7); V_FREE=8.33
 T0S=[0.0,30.0,60.0,90.0]; DECIDE=45.0
-os.makedirs("/home/claude/sumo_results",exist_ok=True)
+os.makedirs("sumo_results",exist_ok=True)
 
 def nid(p): return f"{chr(65+p[0])}{p[1]}"
 net=sumolib.net.readNet(NETF)
@@ -185,30 +185,30 @@ def run_one(method,t0,prob,seed,rfile,timeout):
         traci.close()
 
 def save(tag,rec):
-    with open(f"/home/claude/sumo_results/{tag}.json","w") as f: json.dump(rec,f)
+    with open(f"sumo_results/{tag}.json","w") as f: json.dump(rec,f)
 
 if __name__=="__main__":
     mode=sys.argv[1]
     if mode=="empty_one":
         method=sys.argv[2]
-        routes_file("/home/claude/empty.rou.xml",0.0)
+        routes_file("empty.rou.xml",0.0)
         rec=[]
         for t0 in T0S:
-            r=run_one(method,t0,0.0,1,"/home/claude/empty.rou.xml",1800)
+            r=run_one(method,t0,0.0,1,"empty.rou.xml",1800)
             rec.append(r); print(method,"empty",t0,r,flush=True)
         save(f"empty_one_{method}",rec)
     elif mode=="empty":
-        routes_file("/home/claude/empty.rou.xml",0.0)
+        routes_file("empty.rou.xml",0.0)
         rec={}
         for m in ["STATIC","GREEDY","LA1","TDOPT_open","TDOPT_replan"]:
             rec[m]=[]
             for t0 in T0S:
-                r=run_one(m,t0,0.0,1,"/home/claude/empty.rou.xml",1800)
+                r=run_one(m,t0,0.0,1,"empty.rou.xml",1800)
                 rec[m].append(r); print(m,t0,r,flush=True)
         save("empty",rec)
     elif mode=="dem":
         method=sys.argv[2]; seed=int(sys.argv[3]); den=int(sys.argv[4])
-        prob=1.0/den; rf=f"/home/claude/dem{den}.rou.xml"
+        prob=1.0/den; rf=f"dem{den}.rou.xml"
         routes_file(rf,prob)
         rec=[]
         for t0 in T0S:
@@ -217,9 +217,9 @@ if __name__=="__main__":
         save(f"dem{den}_{method}_{seed}",rec)
     else:
         method=sys.argv[2]; seed=int(sys.argv[3])
-        routes_file("/home/claude/mod.rou.xml",1.0/15.0)
+        routes_file("mod.rou.xml",1.0/15.0)
         rec=[]
         for t0 in T0S:
-            r=run_one(method,t0,1.0/15.0,seed,"/home/claude/mod.rou.xml",2600)
+            r=run_one(method,t0,1.0/15.0,seed,"mod.rou.xml",2600)
             rec.append(r); print(method,seed,t0,r,flush=True)
         save(f"mod_{method}_{seed}",rec)
