@@ -1,7 +1,7 @@
 """Grid-level test of the Gini law: greedy-vs-static advantage against Delta
 for three link-time families matched in mean (65 s). Prediction: one line,
 slope about -J/2 per unit Delta (J=14 on the 8x8 corner trip)."""
-import random, math
+import random, math, zlib
 import signal_routing as sr
 
 C, gs, gl, MU = 120.0, 40.0, 20.0, 65.0
@@ -43,7 +43,7 @@ print("family        par    Delta    adv(s)   ci")
 rows=[]
 for fam, pars in cells:
     for par in pars:
-        drng = random.Random(hash((fam,par)) % 10**6)
+        drng = random.Random(zlib.crc32(f"{fam}-{par}".encode()))
         Delta = delta_of(fam, par, drng)
         adv=[]
         for i in range(80):

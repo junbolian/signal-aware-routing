@@ -98,6 +98,14 @@ intervals. All scenario ablations (RTOR off, reversed phase order, synchronized
 and progressive offsets, grid sizes 5 and 12) are switches inside
 `signal_routing.py`.
 
+### Analysis and verification scripts (added with the revision)
+
+- `gini_verify.py` — block-level Monte Carlo check of the general ladder law A = rho(1-rho)r/2 - Delta/2 across uniform, triangular, and lognormal link times (Proposition 3).
+- `gini_grid.py` — full-grid Delta-collapse experiment behind Figure 3(a); writes `gini_grid_results.csv`.
+- `pernet_slopes.py` — the per-network slope statistics reported in the paper (uniform h-slope, 160 networks; family Delta-slopes, 80 networks); writes `uniform_slope_pernet.json` and `gini_family_slopes.json`. Deterministic seeding; two runs give identical output.
+- `p4_diagnostic.py` — instance-level check of the coupled offset-error bound on 1,920 planned-path evaluations (zero violations); writes `p4_diag.json`.
+- `lak_monotonicity.py` — pointwise monotonicity audit of rolling LA-k with the LA-k >= TD-OPT sanity check; the aggregate-vs-pointwise finding in the paper.
+
 ## Results snapshot
 
 Gap to the full-information optimum (TD-OPT), base grid, paired instances:
