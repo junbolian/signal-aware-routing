@@ -13,33 +13,25 @@ quantifies what each layer of information is worth.
 
 ## Key findings
 
-1. **Speed separates from routing.** Under a speed cap with waiting permitted,
-   cruising at the cap and waiting at stoplines is time-optimal on every route,
-   so speed advisory (GLOSA) never changes arrival time and route choice can be
-   optimized with constant link times.
-2. **Take-the-green is a trap.** The myopic rule that always follows the current
-   green has worst-case ratio Theta(C/tau_min) and, on average, beats static
-   routing only when link times are nearly homogeneous (coefficient of variation
-   below about 13% in the base grid). Its advantage decays at the policy-free
-   rate of one third of a second per second of link-time dispersion per decision;
-   the full-grid simulated slope matches this prediction within 4%.
-3. **Timing accuracy has a linear price.** Planning with offsets known to within
-   sigma degrades linearly; benefits break even with static routing near a
-   quarter cycle. Production countdown accuracy (a few seconds) sits deep inside
-   the useful region.
+1. **Speed separates from routing.** Cruising at the speed cap and waiting at
+   stoplines is time-optimal on every route, so speed advisory (GLOSA) never
+   changes arrival time.
+2. **Take-the-green is a trap.** The myopic rule has worst-case ratio
+   Theta(C/tau_min) and beats static routing only when link times are nearly
+   homogeneous, its advantage decaying at a policy-free rate per unit of
+   link-time dispersion.
+3. **Timing accuracy has a linear price.** Offsets known to within sigma degrade
+   the plan linearly; benefits break even with static routing near a quarter
+   cycle, so production countdown accuracy sits deep inside the useful region.
 4. **Depth has geometric returns, capped by accuracy.** Rolling lookahead over k
-   true crossings closes the optimality gap by a factor of about 0.6 per crossing,
-   with a floor set by countdown error.
-5. **Under unknown offsets the optimum is a threshold rule.** The optimal
-   non-revisiting policy is link-stationary, often collapsing to a single number
-   per link ("turn right if the straight countdown exceeds b"). Its value shows
-   the light directly ahead is worth only about a third of the full-information
-   gap; the rest requires downstream timing data.
-6. **Congestion is the boundary.** In SUMO under congestion with queue-ignorant
-   planners, deep timing plans lose their entire advantage while the shallow
-   one-step rule beats static routing in 39 of 40 paired instances at moderate
-   demand, an edge that persists from light to heavy demand (n = 40 at the
-   moderate level, ten background seeds; three demand levels).
+   true crossings closes the optimality gap by a factor of about 0.6 per
+   crossing, with a floor set by countdown error.
+5. **Under unknown offsets the optimum is a threshold rule.** Link-stationary,
+   often a single number per link. Its value shows the light directly ahead is
+   worth only about a third of the full-information gap.
+6. **Congestion is the boundary.** In SUMO with queue-ignorant planners, deep
+   timing plans lose their entire advantage while the shallow one-step rule
+   still beats static routing from light to heavy demand.
 
 ## Repository layout
 
@@ -49,14 +41,19 @@ signal_routing.py      Core model: grid network, four-phase signals, RTOR,
                        SP-FF / SP-STATIC / GREEDY baselines, scenario suite.
 lookahead.py           Rolling LA-k policies and the static value function.
 extend_lookahead.py    LA-k for k = 1..5 under countdown error sigma = 0/5/10 s.
+lak_monotonicity.py    Pointwise monotonicity audit of rolling LA-k.
 sweep_hetero.py        Greedy-vs-static advantage across link heterogeneity.
+gini_verify.py         Monte Carlo check of the general ladder law (Prop 3).
+gini_grid.py           Full-grid Delta-collapse behind Figure 3(a).
+pernet_slopes.py       Per-network slope statistics for the dispersion law.
 ladder_verify.py       Monte Carlo check of the closed-form ladder model (Prop 3).
+p4_diagnostic.py       Instance-level check of the offset-error bound (Prop 4).
 check_uniform.py       Uniform-arrival-phase sanity check (Lemma 3).
 mdp_policy.py          Unknown-offset MDP: value iteration, threshold policy,
                        simulation validation (Prop 6).
 sumo_runner.py         SUMO microscopic experiments (empty and congested).
 sumo_aggregate.py      Paired statistics and tables from SUMO outputs.
-make_figures.py        Regenerates all five paper figures into figures/.
+make_figures.py        Regenerates all paper figures into figures/.
 raw_results.csv        Per-instance results of the grid study.
 summary.csv            Aggregated grid-study results.
 sumo_results/          Raw SUMO run outputs (json).
@@ -80,15 +77,17 @@ pip install eclipse-sumo sumolib traci
 
 ## Reproducing the paper
 
-| Paper artifact | Command | Approximate runtime |
-|---|---|---|
-| Tables 1-2, `raw_results.csv` | `python signal_routing.py` | minutes |
-| Table 3 (LA-k x sigma) | `python extend_lookahead.py` | ~5 min |
-| Prop 3 closed form vs Monte Carlo | `python ladder_verify.py` | ~1 min |
-| Prop 6 MDP value and policy | `python mdp_policy.py` | ~2 min |
-| Lemma 3 sanity check | `python check_uniform.py` | seconds |
-| SUMO validation and congestion | `python sumo_runner.py empty`, `python sumo_runner.py mod METHOD SEED`, `python sumo_runner.py dem METHOD SEED DENOM`, then `python sumo_aggregate.py` | ~1 min per chunk |
-| All figures | `python make_figures.py` | ~2 min |
+| Paper artifact | Command |
+|---|---|
+| Tables 1-2, `raw_results.csv` | `python signal_routing.py` |
+| Table 3 (LA-k x sigma) | `python extend_lookahead.py` |
+| Prop 3 closed form vs Monte Carlo | `python ladder_verify.py`, `python gini_verify.py` |
+| Prop 3 grid slopes, Figure 3(a) | `python gini_grid.py`, `python pernet_slopes.py` |
+| Prop 4 offset-error bound | `python p4_diagnostic.py` |
+| Prop 6 MDP value and policy | `python mdp_policy.py` |
+| Lemma 3 sanity check | `python check_uniform.py` |
+| SUMO validation and congestion | `python sumo_runner.py empty`, `python sumo_runner.py mod METHOD SEED`, `python sumo_runner.py dem METHOD SEED DENOM`, then `python sumo_aggregate.py` |
+| All figures | `python make_figures.py` |
 
 Model defaults: 8x8 grid, cycle C = 120 s, symmetric splits (40 s through, 20 s
 protected left), through-before-left, right turn on red enabled, crossing time
@@ -97,14 +96,6 @@ paired evaluation across 60 networks x 8 departures with 95% confidence
 intervals. All scenario ablations (RTOR off, reversed phase order, synchronized
 and progressive offsets, grid sizes 5 and 12) are switches inside
 `signal_routing.py`.
-
-### Analysis and verification scripts (added with the revision)
-
-- `gini_verify.py` — block-level Monte Carlo check of the general ladder law A = rho(1-rho)r/2 - Delta/2 across uniform, triangular, and lognormal link times (Proposition 3).
-- `gini_grid.py` — full-grid Delta-collapse experiment behind Figure 3(a); writes `gini_grid_results.csv`.
-- `pernet_slopes.py` — the per-network slope statistics reported in the paper (uniform h-slope, 160 networks; family Delta-slopes, 80 networks); writes `uniform_slope_pernet.json` and `gini_family_slopes.json`. Deterministic seeding; two runs give identical output.
-- `p4_diagnostic.py` — instance-level check of the coupled offset-error bound on 1,920 planned-path evaluations (zero violations); writes `p4_diag.json`.
-- `lak_monotonicity.py` — pointwise monotonicity audit of rolling LA-k with the LA-k >= TD-OPT sanity check; the aggregate-vs-pointwise finding in the paper.
 
 ## Results snapshot
 
