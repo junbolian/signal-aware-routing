@@ -69,33 +69,26 @@ for m,c,ls in (("SP-STATIC","st","--"),("GREEDY","gr",":"),("TD-OPT","opt","-.")
     ax.axhline(t,color=COL[c],ls=ls,lw=.9,label=m)
 ax.set_xlabel("Offset knowledge error $\\sigma$ (s), $C=120$ s")
 ax.set_ylabel("Mean realized travel time (s)")
-ax.legend(loc="lower right")
+ax.set_ylim(940,1180)
+ax.legend(loc="lower right", bbox_to_anchor=(1.0, 0.25))
 fig.savefig("figures/fig2_voi.png"); plt.close(fig)
 
 # Fig 3: scaling, two panels (a heterogeneity, b grid size)
-spreads=[0,5,10,15,20,25]; pts=[]
-for h in spreads:
-    adv=[]
-    for i in range(40):
-        rng=random.Random(1000+i)
-        net=sr.Net(N,rng,C=C,link_lo=65.0-h,link_hi=65.0+h,offset_mode="random")
-        p=sr.static_route(net,tm,orig,dest,use_ewait=True)
-        for t0 in deps:
-            a=sr.evaluate(net,tm,p,t0)["time"]
-            b=sr.evaluate(net,tm,sr.greedy_route(net,tm,orig,dest,t0),t0)["time"]
-            adv.append(a-b)
-    pts.append((h,)+mean_ci(adv))
+rows2=[]
+import csv as _csv
+rows2=list(_csv.DictReader(open("gini_grid_results.csv")))
 fig,(a1,a2)=plt.subplots(1,2,figsize=(6.9,2.9))
-a1.errorbar([p[0] for p in pts],[p[1] for p in pts],yerr=[p[2] for p in pts],
-            marker="o",ms=4,lw=1,capsize=2.5,color=COL["la"],label="simulated advantage")
-mh=sum(p[0] for p in pts)/6; my=sum(p[1] for p in pts)/6
-sl=sum((p[0]-mh)*(p[1]-my) for p in pts)/sum((p[0]-mh)**2 for p in pts)
-a1.plot([0,25],[my+sl*(x-mh) for x in (0,25)],ls="--",lw=1,color=COL["opt"],
-        label=f"OLS slope ${sl:.2f}$ s/s")
-a1.plot([0,25],[my-14/3*(x-mh) for x in (0,25)],ls=":",lw=1,color=COL["st"],
-        label="predicted $-J/3=-4.67$")
+sty={"uniform":("#4477AA","o"),"triangular":("#228833","s"),"lognormal":("#CCBB44","^")}
+for fam,(c,mk) in sty.items():
+    fx=[float(r["Delta"]) for r in rows2 if r["family"]==fam]
+    fy=[float(r["adv"]) for r in rows2 if r["family"]==fam]
+    fe=[float(r["ci"]) for r in rows2 if r["family"]==fam]
+    a1.errorbar(fx,fy,yerr=fe,fmt=mk,ms=4,elinewidth=1,capsize=2.5,color=c,label=fam)
+ax_=[float(r["Delta"]) for r in rows2]; ay_=[float(r["adv"]) for r in rows2]
+cx=sum(ax_)/len(ax_); cy=sum(ay_)/len(ay_)
+a1.plot([2,23],[cy-7*(x-cx) for x in (2,23)],ls=":",lw=1,color="#000000",label="prediction slope $-J/2$")
 a1.axhline(0,color="k",lw=.7)
-a1.set_xlabel("Link-time half-width $h$ (s)")
+a1.set_xlabel("Gini mean difference $\\Delta$ (s)")
 a1.set_ylabel("GREEDY $-$ SP-STATIC (s)")
 a1.legend(loc="lower left")
 grids=[5,8,12]
@@ -112,7 +105,6 @@ for ax_,lab in ((a1,"a"),(a2,"b")):
     ax_.text(0.02,1.03,lab,transform=ax_.transAxes,fontweight="bold",fontsize=10)
 fig.tight_layout()
 fig.savefig("figures/fig3_scaling.png"); plt.close(fig)
-print("fig3 slope",round(sl,3))
 
 # Fig 4: lookahead, two panels (a depth sigma=0; b depth x accuracy)
 het=[16.22,9.65,5.33,3.55,2.76,1.38]; hetci=[1.07,.93,.69,.57,.50,.40]

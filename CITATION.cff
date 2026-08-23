@@ -3,7 +3,7 @@ message: "If you use this code, please cite the paper below."
 title: "Signal-Aware Routing"
 authors:
   - family-names: Lian
-    given-names: Junbo
+    given-names: Junbo Jacob
 year: 2026
 license: MIT
 preferred-citation:
@@ -11,6 +11,12 @@ preferred-citation:
   title: "Routing Through Traffic Signals: The Value, Depth, and Accuracy of Phase Information"
   authors:
     - family-names: Lian
-      given-names: Junbo
+      given-names: Junbo Jacob
+    - family-names: Chen
+      given-names: Zheng
+    - family-names: Liu
+      given-names: Xing
+    - family-names: Xu
+      given-names: Zeshui
   year: 2026
   notes: "Working paper"
