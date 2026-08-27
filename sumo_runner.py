@@ -1,6 +1,8 @@
 """Chunked SUMO runner. Usage:
   python3 sumo_runner.py empty
   python3 sumo_runner.py mod <METHOD> <seed>
+  python3 sumo_runner.py dem <METHOD> <seed> <denom>
+METHOD is one of STATIC, GREEDY, LA1, TDOPT_open, TDOPT_replan, STATIC-TRAFFIC.
 Writes JSON results to sumo_results/."""
 import os, sys, math, json, random, heapq
 import sumo, sumolib, traci
@@ -13,6 +15,9 @@ C,GS,GL=120.0,40.0,20.0
 TM=sr.Timing(C=C,gs=GS,gl=GL,straight_first=True,rtor=True)
 N=8; ORIG,DEST=(7,0),(0,7); V_FREE=8.33
 T0S=[0.0,30.0,60.0,90.0]; DECIDE=45.0
+MEAS_WIN=240.0; MEAS_EVERY=20.0
+ALIAS={"STATIC-TRAFFIC":"STATICTRAFFIC"}
+LASTRUN={}
 os.makedirs("sumo_results",exist_ok=True)
 
 def nid(p): return f"{chr(65+p[0])}{p[1]}"
@@ -85,6 +90,64 @@ def td_from_link(e,t):
     while cur is not None: path.append(cur); cur=pred[cur]
     path.reverse(); return path
 
+def measure_links(prob,seed,rfile):
+    """One traffic snapshot per (seed,demand): sample every MEAS_EVERY s over the
+    warmup window, which ends before any probe departs. Returns the measured link
+    times and the diagnostics of the measurement."""
+    traci.start([SUMO_BIN,"-n",NETF,"-r",rfile,"--seed",str(seed),
+                 "--step-length","1","--no-warnings","--no-step-log",
+                 "--time-to-teleport","600"])
+    try:
+        T=tls_tables(); cache={}
+        eids=[e.getID() for e in net.getEdges()]
+        ff={e:ELEN[e]/net.getEdge(e).getSpeed() for e in eids}
+        acc={e:[] for e in eids}; nsamp=0
+        t=0.0
+        while t<MEAS_WIN-1e-9:
+            drive(T,cache,t)
+            traci.simulationStep(); t=traci.simulation.getTime()
+            if abs(t%MEAS_EVERY)<1e-9:
+                nsamp+=1
+                for e in eids:
+                    if traci.edge.getLastStepVehicleNumber(e)>0:
+                        acc[e].append(ELEN[e]/max(traci.edge.getLastStepMeanSpeed(e),0.1))
+        raw={e:(sum(acc[e])/len(acc[e]) if acc[e] else ff[e]) for e in eids}
+        meas={e:max(raw[e],ff[e]) for e in eids}
+        diag={"nsamp":nsamp,"n_edges":len(eids),
+              "frac_sampled":sum(1 for e in eids if acc[e])/len(eids),
+              "frac_raw_ge_ff":sum(1 for e in eids if raw[e]>=ff[e]-1e-9)/len(eids),
+              "ratio":sorted(meas[e]/ff[e] for e in eids)}
+        return meas,diag
+    finally:
+        traci.close()
+
+def traffic_route(meas,orig,dest):
+    """Plain Dijkstra on measured link times. No signal term is added: the
+    measurement already contains the queueing and signal delay the background
+    traffic experienced, so an E-wait term would double-count it."""
+    def lt(u,v): return meas[sedge(u,v)]
+    best={}; pred={}; pq=[]
+    for w,d in ANET.nbrs(orig):
+        e=(orig,w); c=lt(orig,w)
+        if c<best.get(e,1e18): best[e]=c; pred[e]=None; heapq.heappush(pq,(c,e))
+    goal=None
+    while pq:
+        c,e=heapq.heappop(pq)
+        if c>best.get(e,1e18)+1e-9: continue
+        u,v=e
+        if v==dest: goal=e; break
+        h=(v[0]-u[0],v[1]-u[1])
+        for w,d in ANET.nbrs(v):
+            if w==u: continue
+            m=sr.move_type(h,d)
+            if m is None: continue
+            c2=c+ANET.t_cross+lt(v,w); e2=(v,w)
+            if c2<best.get(e2,1e18)-1e-9:
+                best[e2]=c2; pred[e2]=e; heapq.heappush(pq,(c2,e2))
+    path=[]; cur=goal
+    while cur is not None: path.append(cur); cur=pred[cur]
+    path.reverse(); return path
+
 def nxt_greedy(e,t):
     u,v=e; h=(v[0]-u[0],v[1]-u[1]); opts={}
     for w,d in ANET.nbrs(v):
@@ -109,7 +172,9 @@ def nxt_la1(e,t):
         if val<bm[0]-1e-9: bm=(val,(v,w))
     return bm[1]
 
-def first_link(method,t0):
+def first_link(method,t0,meas=None):
+    if method=="STATICTRAFFIC":
+        p=traffic_route(meas,ORIG,DEST); return p[0],p
     if method=="STATIC":
         p=sr.static_route(ANET,TM,ORIG,DEST,use_ewait=True); return p[0],p
     if method in ("TDOPT_open","TDOPT_replan"):
@@ -137,7 +202,7 @@ def routes_file(path,prob):
                 f.write(f"<flow id=\"f_{n2}\" type=\"bg\" route=\"r_{n2}\" begin=\"0\" end=\"2600\" probability=\"{prob}\" departLane=\"best\" departSpeed=\"max\"/>\n")
         f.write("</routes>\n")
 
-def run_one(method,t0,prob,seed,rfile,timeout):
+def run_one(method,t0,prob,seed,rfile,timeout,meas=None):
     traci.start([SUMO_BIN,"-n",NETF,"-r",rfile,"--seed",str(seed),
                  "--step-length","1","--no-warnings","--no-step-log",
                  "--time-to-teleport","600"])
@@ -145,17 +210,18 @@ def run_one(method,t0,prob,seed,rfile,timeout):
         T=tls_tables(); cache={}
         warm=240.0 if prob>0 else 0.0
         depart=warm+t0
-        e0,preset=first_link(method,depart)
+        e0,preset=first_link(method,depart,meas)
         if method=="TDOPT_replan":
             redges=[sedge(*e0)]
         else:
             redges=[sedge(*l) for l in preset] if preset else [sedge(*e0)]
         traci.route.add("egoR",redges)
-        added=False; adep=None; arr=None; decided=set()
+        added=False; adep=None; arr=None; decided=set(); tpl=[]
         t=0.0
         while t<timeout:
             drive(T,cache,t)
             traci.simulationStep(); t=traci.simulation.getTime()
+            tpl+= list(traci.simulation.getStartingTeleportIDList())
             if not added and t>=depart:
                 traci.vehicle.add("ego","egoR",typeID="egoT",departPos="0",
                     departLane="best",arrivalPos=str(ELEN[redges[-1]]-10.0))
@@ -180,12 +246,31 @@ def run_one(method,t0,prob,seed,rfile,timeout):
                             traci.vehicle.setRoute("ego",[eid,ne])
             if added and "ego" in traci.simulation.getArrivedIDList():
                 arr=t; break
+        LASTRUN.update({"teleports":tpl,"route":list(redges),"arr":arr,"dep":adep})
         return (arr-adep) if arr and adep else None
     finally:
         traci.close()
 
 def save(tag,rec):
     with open(f"sumo_results/{tag}.json","w") as f: json.dump(rec,f)
+
+def measure_one(method,prob,seed,rfile):
+    """Traffic snapshot, taken once per seed and reused across the four
+    departures; only STATIC-TRAFFIC consumes it."""
+    if method!="STATICTRAFFIC": return None
+    meas,d=measure_links(prob,seed,rfile)
+    q=d["ratio"]; n=len(q)
+    print(f"measure seed={seed} samples={d['nsamp']} edges={d['n_edges']} "
+          f"sampled={100*d['frac_sampled']:.1f}% raw>=ff={100*d['frac_raw_ge_ff']:.1f}% "
+          f"ratio med={q[n//2]:.3f} p90={q[int(.9*n)]:.3f} max={q[-1]:.3f}",flush=True)
+    return meas
+
+def report(method,row):
+    print(*row,flush=True)
+    if method=="STATICTRAFFIC":
+        tp=LASTRUN.get("teleports",[])
+        print("   route",">".join(LASTRUN.get("route",[])),"teleports",len(tp),
+              (tp if tp else ""),flush=True)
 
 if __name__=="__main__":
     mode=sys.argv[1]
@@ -207,19 +292,21 @@ if __name__=="__main__":
                 rec[m].append(r); print(m,t0,r,flush=True)
         save("empty",rec)
     elif mode=="dem":
-        method=sys.argv[2]; seed=int(sys.argv[3]); den=int(sys.argv[4])
+        method=ALIAS.get(sys.argv[2],sys.argv[2]); seed=int(sys.argv[3]); den=int(sys.argv[4])
         prob=1.0/den; rf=f"dem{den}.rou.xml"
         routes_file(rf,prob)
+        meas=measure_one(method,prob,seed,rf)
         rec=[]
         for t0 in T0S:
-            r=run_one(method,t0,prob,seed,rf,3600)
-            rec.append(r); print("dem",den,method,seed,t0,r,flush=True)
+            r=run_one(method,t0,prob,seed,rf,3600,meas)
+            rec.append(r); report(method,("dem",den,method,seed,t0,r))
         save(f"dem{den}_{method}_{seed}",rec)
     else:
-        method=sys.argv[2]; seed=int(sys.argv[3])
+        method=ALIAS.get(sys.argv[2],sys.argv[2]); seed=int(sys.argv[3])
         routes_file("mod.rou.xml",1.0/15.0)
+        meas=measure_one(method,1.0/15.0,seed,"mod.rou.xml")
         rec=[]
         for t0 in T0S:
-            r=run_one(method,t0,1.0/15.0,seed,"mod.rou.xml",2600)
-            rec.append(r); print(method,seed,t0,r,flush=True)
+            r=run_one(method,t0,1.0/15.0,seed,"mod.rou.xml",2600,meas)
+            rec.append(r); report(method,(method,seed,t0,r))
         save(f"mod_{method}_{seed}",rec)

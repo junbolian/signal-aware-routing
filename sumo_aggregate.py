@@ -1,4 +1,4 @@
-import json, math, glob
+import json, math, glob, os
 import matplotlib; matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import signal_routing as sr
@@ -36,16 +36,17 @@ for m in methods:
 
 mod={}
 for f in glob.glob("sumo_results/mod_*.json"):
-    parts=f.split("/")[-1][:-5].split("_")
+    parts=os.path.basename(f)[:-5].split("_")
     seed=parts[-1]; meth="_".join(parts[1:-1])
     mod.setdefault(meth,{})[int(seed)]=json.load(open(f))
 print("\n=== MODERATE TRAFFIC (prob 1/15, warmup 240s) ===")
 flat={}
-for m in methods:
+for m in methods+["STATICTRAFFIC"]:
     xs=[]
     for sd in sorted(mod.get(m,{})):
         xs+= [x for x in mod[m][sd] if x]
     flat[m]=xs
+    if not xs: continue
     t,ci=mean_ci(xs)
     print(f"  {m:12s} n={len(xs):2d}  time {t:7.1f}+-{ci:5.1f}")
 def paired(a,b):
@@ -68,7 +69,7 @@ for den in (25,15,10):
             src[m]={sd:mod[m][sd] for sd in (11,12,13,14)}
     else:
         for f in glob.glob(f"sumo_results/dem{den}_*.json"):
-            parts=f.split("/")[-1][:-5].split("_")
+            parts=os.path.basename(f)[:-5].split("_")
             seed=parts[-1]; meth="_".join(parts[1:-1])
             src.setdefault(meth,{})[int(seed)]=json.load(open(f))
     line=f"  1/{den:2d}: "
@@ -84,4 +85,33 @@ for den in (25,15,10):
     m1,c1,w1,n1=pr2("LA1","STATIC"); m2,c2,w2,n2=pr2("LA1","TDOPT_replan")
     print(line)
     print(f"        LA1-STATIC {m1:+6.1f}+-{c1:4.1f} ({w1}/{n1})   LA1-replan {m2:+6.1f}+-{c2:4.1f} ({w2}/{n2})")
+
+# --- traffic-aware baseline: measured link times, no signal term ------------
+print("\n=== STATIC-TRAFFIC (measured link times) vs the phase-aware methods ===")
+def cell(den):
+    if den==15: return mod
+    src={}
+    for f in glob.glob(f"sumo_results/dem{den}_*.json"):
+        parts=os.path.basename(f)[:-5].split("_")
+        src.setdefault("_".join(parts[1:-1]),{})[int(parts[-1])]=json.load(open(f))
+    return src
+def pairdiff(src,a,b):
+    seeds=sorted(set(src.get(a,{}))&set(src.get(b,{}))); d=[]
+    for sd in seeds:
+        d+=[x-y for x,y in zip(src[a][sd],src[b][sd]) if x and y]
+    if not d: return None
+    m_,ci=mean_ci(d); return m_,ci,sum(1 for x in d if x<0),len(d)
+for den,lab in ((25,"light"),(15,"moderate"),(10,"heavy")):
+    src=cell(den); st=src.get("STATICTRAFFIC",{})
+    n=sum(1 for sd in st for x in st[sd] if x)
+    print(f"  {lab} (1/{den}): n={n} over seeds {sorted(st)}")
+    for m in ("STATIC","LA1","TDOPT_replan"):
+        miss=set(st)-set(src.get(m,{}))
+        if miss: print(f"    WARNING unpaired seeds vs {m}: {sorted(miss)}")
+    for a,b in (("STATICTRAFFIC","STATIC"),("LA1","STATICTRAFFIC"),
+                ("TDOPT_replan","STATICTRAFFIC")):
+        r=pairdiff(src,a,b)
+        if r is None: print(f"    {a} - {b}: missing"); continue
+        m_,ci,w,nn=r
+        print(f"    {a:13s} - {b:13s} {m_:+7.1f}+-{ci:5.1f}s  ({a} faster in {w}/{nn})")
 print("done")
