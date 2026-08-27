@@ -88,6 +88,7 @@ pip install eclipse-sumo sumolib traci
 | Lemma 3 sanity check | `python check_uniform.py` |
 | SUMO validation and congestion | `python sumo_runner.py empty`, `python sumo_runner.py mod METHOD SEED`, `python sumo_runner.py dem METHOD SEED DENOM`, then `python sumo_aggregate.py` |
 | STATIC-TRAFFIC baseline | `python sumo_runner.py mod STATIC-TRAFFIC SEED`, `python sumo_runner.py dem STATIC-TRAFFIC SEED DENOM` |
+| STATIC-TRAFFIC-RT baseline | `python sumo_runner.py mod STATIC-TRAFFIC-RT SEED`, `python sumo_runner.py dem STATIC-TRAFFIC-RT SEED DENOM` |
 | All figures | `python make_figures.py` |
 
 Model defaults: 8x8 grid, cycle C = 120 s, symmetric splits (40 s through, 20 s

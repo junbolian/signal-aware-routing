@@ -86,32 +86,50 @@ for den in (25,15,10):
     print(line)
     print(f"        LA1-STATIC {m1:+6.1f}+-{c1:4.1f} ({w1}/{n1})   LA1-replan {m2:+6.1f}+-{c2:4.1f} ({w2}/{n2})")
 
-# --- traffic-aware baseline: measured link times, no signal term ------------
-print("\n=== STATIC-TRAFFIC (measured link times) vs the phase-aware methods ===")
-def cell(den):
-    if den==15: return mod
+# --- measured-link-time baselines --------------------------------------------
+# Column 1 pairs against the shipped results. Column 2 pairs against the same
+# methods re-run on the build in SAMEBUILD_DIR, which removes SUMO-version drift;
+# set that env var to a directory of <prefix>_<METHOD>_<seed>.json to enable it.
+SAMEBUILD=os.environ.get("SAMEBUILD_DIR","")
+def cell(den,d="sumo_results"):
+    if den==15 and d=="sumo_results": return mod
     src={}
-    for f in glob.glob(f"sumo_results/dem{den}_*.json"):
-        parts=os.path.basename(f)[:-5].split("_")
-        src.setdefault("_".join(parts[1:-1]),{})[int(parts[-1])]=json.load(open(f))
+    for f in glob.glob(os.path.join(d,("mod" if den==15 else f"dem{den}")+"_*.json")):
+        p=os.path.basename(f)[:-5].split("_")
+        src.setdefault("_".join(p[1:-1]),{})[int(p[-1])]=json.load(open(f))
     return src
-def pairdiff(src,a,b):
-    seeds=sorted(set(src.get(a,{}))&set(src.get(b,{}))); d=[]
+def pairdiff(A,B,a,b):
+    seeds=sorted(set(A.get(a,{}))&set(B.get(b,{}))); d=[]
     for sd in seeds:
-        d+=[x-y for x,y in zip(src[a][sd],src[b][sd]) if x and y]
+        d+=[x-y for x,y in zip(A[a][sd],B[b][sd]) if x and y]
     if not d: return None
     m_,ci=mean_ci(d); return m_,ci,sum(1 for x in d if x<0),len(d)
-for den,lab in ((25,"light"),(15,"moderate"),(10,"heavy")):
-    src=cell(den); st=src.get("STATICTRAFFIC",{})
-    n=sum(1 for sd in st for x in st[sd] if x)
-    print(f"  {lab} (1/{den}): n={n} over seeds {sorted(st)}")
-    for m in ("STATIC","LA1","TDOPT_replan"):
-        miss=set(st)-set(src.get(m,{}))
-        if miss: print(f"    WARNING unpaired seeds vs {m}: {sorted(miss)}")
-    for a,b in (("STATICTRAFFIC","STATIC"),("LA1","STATICTRAFFIC"),
-                ("TDOPT_replan","STATICTRAFFIC")):
-        r=pairdiff(src,a,b)
-        if r is None: print(f"    {a} - {b}: missing"); continue
-        m_,ci,w,nn=r
-        print(f"    {a:13s} - {b:13s} {m_:+7.1f}+-{ci:5.1f}s  ({a} faster in {w}/{nn})")
+def fmt(r,a):
+    if r is None: return "        n/a        "
+    m_,ci,w,n=r; return f"{m_:+7.1f}+-{ci:5.1f} ({w:2d}/{n:2d})"
+NEW=[("STATICTRAFFIC","STATIC-TRAFFIC"),("STATICTRAFFICRT","STATIC-TRAFFIC-RT")]
+print("\n=== measured-link-time baselines vs the phase-aware methods ===")
+print("   (col 1: paired against shipped results; col 2: against SAMEBUILD_DIR rerun)")
+for key,lab in NEW:
+    print(f"  --- {lab} ---")
+    for den,dlab in ((25,"light"),(15,"moderate"),(10,"heavy")):
+        cur=cell(den); sb=cell(den,SAMEBUILD) if SAMEBUILD else {}
+        st=cur.get(key,{})
+        n=sum(1 for sd in st for x in st[sd] if x)
+        print(f"    {dlab:8s} (1/{den:2d})  n={n:2d}  seeds={sorted(st)}")
+        for m in ("STATIC","LA1","TDOPT_replan"):
+            miss=set(st)-set(cur.get(m,{}))
+            if miss: print(f"      WARNING unpaired seeds vs {m}: {sorted(miss)}")
+        for a,b in ((key,"STATIC"),("LA1",key),("TDOPT_replan",key)):
+            A1,B1=(cur,cur)
+            A2,B2=((cur,sb) if a==key else (sb,cur)) if sb else ({},{})
+            an=lab if a==key else a; bn=lab if b==key else b
+            print(f"      {an:17s} - {bn:17s} {fmt(pairdiff(A1,B1,a,b),a)}   "
+                  f"{fmt(pairdiff(A2,B2,a,b),a)}")
+# the two measured baselines against each other, same instances, same build
+print("  --- STATIC-TRAFFIC-RT vs STATIC-TRAFFIC (same instances) ---")
+for den,dlab in ((25,"light"),(15,"moderate"),(10,"heavy")):
+    cur=cell(den)
+    print(f"    {dlab:8s} (1/{den:2d})  "
+          f"{fmt(pairdiff(cur,cur,'STATICTRAFFICRT','STATICTRAFFIC'),'RT')}")
 print("done")

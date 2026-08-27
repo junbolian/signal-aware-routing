@@ -2,7 +2,8 @@
   python3 sumo_runner.py empty
   python3 sumo_runner.py mod <METHOD> <seed>
   python3 sumo_runner.py dem <METHOD> <seed> <denom>
-METHOD is one of STATIC, GREEDY, LA1, TDOPT_open, TDOPT_replan, STATIC-TRAFFIC.
+METHOD is one of STATIC, GREEDY, LA1, TDOPT_open, TDOPT_replan,
+STATIC-TRAFFIC, STATIC-TRAFFIC-RT.
 Writes JSON results to sumo_results/."""
 import os, sys, math, json, random, heapq
 import sumo, sumolib, traci
@@ -16,7 +17,8 @@ TM=sr.Timing(C=C,gs=GS,gl=GL,straight_first=True,rtor=True)
 N=8; ORIG,DEST=(7,0),(0,7); V_FREE=8.33
 T0S=[0.0,30.0,60.0,90.0]; DECIDE=45.0
 MEAS_WIN=240.0; MEAS_EVERY=20.0
-ALIAS={"STATIC-TRAFFIC":"STATICTRAFFIC"}
+ALIAS={"STATIC-TRAFFIC":"STATICTRAFFIC","STATIC-TRAFFIC-RT":"STATICTRAFFICRT"}
+RT_VMIN=2.0
 LASTRUN={}
 os.makedirs("sumo_results",exist_ok=True)
 
@@ -90,10 +92,16 @@ def td_from_link(e,t):
     while cur is not None: path.append(cur); cur=pred[cur]
     path.reverse(); return path
 
-def measure_links(prob,seed,rfile):
+def measure_links(prob,seed,rfile,queue_free=False):
     """One traffic snapshot per (seed,demand): sample every MEAS_EVERY s over the
     warmup window, which ends before any probe departs. Returns the measured link
-    times and the diagnostics of the measurement."""
+    times and the diagnostics of the measurement.
+
+    queue_free=False (STATIC-TRAFFIC): every occupied edge is sampled, so a vehicle
+    stopped at a red light enters the link cost as signal delay.
+    queue_free=True (STATIC-TRAFFIC-RT): only edges with no halting vehicle are
+    sampled, and the speed floor is RT_VMIN, so the result is a running-time
+    surface with the signal delay left out of the link cost."""
     traci.start([SUMO_BIN,"-n",NETF,"-r",rfile,"--seed",str(seed),
                  "--step-length","1","--no-warnings","--no-step-log",
                  "--time-to-teleport","600"])
@@ -109,7 +117,11 @@ def measure_links(prob,seed,rfile):
             if abs(t%MEAS_EVERY)<1e-9:
                 nsamp+=1
                 for e in eids:
-                    if traci.edge.getLastStepVehicleNumber(e)>0:
+                    if traci.edge.getLastStepVehicleNumber(e)<=0: continue
+                    if queue_free:
+                        if traci.edge.getLastStepHaltingNumber(e)!=0: continue
+                        acc[e].append(ELEN[e]/max(traci.edge.getLastStepMeanSpeed(e),RT_VMIN))
+                    else:
                         acc[e].append(ELEN[e]/max(traci.edge.getLastStepMeanSpeed(e),0.1))
         raw={e:(sum(acc[e])/len(acc[e]) if acc[e] else ff[e]) for e in eids}
         meas={e:max(raw[e],ff[e]) for e in eids}
@@ -148,6 +160,14 @@ def traffic_route(meas,orig,dest):
     while cur is not None: path.append(cur); cur=pred[cur]
     path.reverse(); return path
 
+class MeasNet:
+    """ANET with the link-time vector replaced by the measurement. Only link_t
+    changes; nbrs, t_cross and the offsets are ANET's, so sr.static_route runs
+    unmodified on it and keeps SP-STATIC's expected-signal-delay term."""
+    def __init__(self,meas): self.meas=meas; self.t_cross=ANET.t_cross; self.N=ANET.N
+    def nbrs(self,v): return ANET.nbrs(v)
+    def link_t(self,u,v): return self.meas[sedge(u,v)]
+
 def nxt_greedy(e,t):
     u,v=e; h=(v[0]-u[0],v[1]-u[1]); opts={}
     for w,d in ANET.nbrs(v):
@@ -175,6 +195,8 @@ def nxt_la1(e,t):
 def first_link(method,t0,meas=None):
     if method=="STATICTRAFFIC":
         p=traffic_route(meas,ORIG,DEST); return p[0],p
+    if method=="STATICTRAFFICRT":
+        p=sr.static_route(MeasNet(meas),TM,ORIG,DEST,use_ewait=True); return p[0],p
     if method=="STATIC":
         p=sr.static_route(ANET,TM,ORIG,DEST,use_ewait=True); return p[0],p
     if method in ("TDOPT_open","TDOPT_replan"):
@@ -257,17 +279,17 @@ def save(tag,rec):
 def measure_one(method,prob,seed,rfile):
     """Traffic snapshot, taken once per seed and reused across the four
     departures; only STATIC-TRAFFIC consumes it."""
-    if method!="STATICTRAFFIC": return None
-    meas,d=measure_links(prob,seed,rfile)
+    if method not in ("STATICTRAFFIC","STATICTRAFFICRT"): return None
+    meas,d=measure_links(prob,seed,rfile,queue_free=(method=="STATICTRAFFICRT"))
     q=d["ratio"]; n=len(q)
-    print(f"measure seed={seed} samples={d['nsamp']} edges={d['n_edges']} "
+    print(f"measure {method} seed={seed} samples={d['nsamp']} edges={d['n_edges']} "
           f"sampled={100*d['frac_sampled']:.1f}% raw>=ff={100*d['frac_raw_ge_ff']:.1f}% "
           f"ratio med={q[n//2]:.3f} p90={q[int(.9*n)]:.3f} max={q[-1]:.3f}",flush=True)
     return meas
 
 def report(method,row):
     print(*row,flush=True)
-    if method=="STATICTRAFFIC":
+    if method in ("STATICTRAFFIC","STATICTRAFFICRT"):
         tp=LASTRUN.get("teleports",[])
         print("   route",">".join(LASTRUN.get("route",[])),"teleports",len(tp),
               (tp if tp else ""),flush=True)
