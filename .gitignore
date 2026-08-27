@@ -9,3 +9,4 @@ __pycache__/
 *.out
 *.rou.xml
 *.net.xml
+!grid8.net.xml

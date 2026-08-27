@@ -91,6 +91,14 @@ pip install eclipse-sumo sumolib traci
 | STATIC-TRAFFIC-RT baseline | `python sumo_runner.py mod STATIC-TRAFFIC-RT SEED`, `python sumo_runner.py dem STATIC-TRAFFIC-RT SEED DENOM` |
 | All figures | `python make_figures.py` |
 
+`grid8.net.xml` is tracked. It was built with:
+
+```bash
+netgenerate --grid --grid.number 8 --grid.length 500 --grid.attach-length 500 --default.lanenumber 2 --default.speed 8.33 --default-junction-type traffic_light --no-turnarounds -o grid8.net.xml
+```
+
+Shipped congested results were generated with Eclipse SUMO 1.27.1 on Linux; multi-vehicle runs are not bit-identical across platforms/builds (the empty-net calibration is); rerun all methods on one build for paired comparisons.
+
 Model defaults: 8x8 grid, cycle C = 120 s, symmetric splits (40 s through, 20 s
 protected left), through-before-left, right turn on red enabled, crossing time
 2 s, link times U[40, 90] s, i.i.d. uniform offsets, corner-to-corner trips,
@@ -123,7 +131,7 @@ MIT. See `LICENSE`.
 
 ```bibtex
 @unpublished{lian2026signals,
-  author = {Lian, Junbo Jacob and Chen, Zheng and Liu, Xing and Xu, Zeshui},
+  author = {Lian, Junbo Jacob and Chen, Zheng and Liu, Xing and Zhang, Chaoyu and Xu, Zeshui},
   title  = {Routing Through Traffic Signals: The Value, Depth, and Accuracy of Phase Information},
   note   = {Working paper},
   year   = {2026}
