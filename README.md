@@ -3,7 +3,7 @@
 Companion code for the paper:
 
 > **Routing Through Traffic Signals: The Value, Depth, and Accuracy of Phase Information**
-> Junbo Jacob Lian, Xing Liu, Zheng Chen, Chaoyu Zhang, and Ran Yan, working paper, 2026.
+> Junbo Jacob Lian, Xing Liu, Zheng Chen, Chaoyu Zhang, and Zeshui Xu, working paper, 2026.
 
 Navigation systems route with traffic signals summarized as static average turn
 penalties; real-time phase information is used only for display and speed advisory.
@@ -131,7 +131,7 @@ MIT. See `LICENSE`.
 
 ```bibtex
 @unpublished{lian2026signals,
-  author = {Lian, Junbo Jacob and Liu, Xing and Chen, Zheng and Zhang, Chaoyu and Yan, Ran},
+  author = {Lian, Junbo Jacob and Liu, Xing and Chen, Zheng and Zhang, Chaoyu and Xu, Zeshui},
   title  = {Routing Through Traffic Signals: The Value, Depth, and Accuracy of Phase Information},
   note   = {Working paper},
   year   = {2026}
