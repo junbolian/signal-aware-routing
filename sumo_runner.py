@@ -385,15 +385,18 @@ def run_one(method,t0,prob,seed,rfile,timeout,meas=None):
                             off=ANET.offset[lk[1]]
                             if method=="GREEDY": nx=nxt_greedy(lk,tp)
                             elif method=="LA1": nx=nxt_la1(lk,tp)
-                            elif method=="MDP": nx=nxt_mdp(lk,tp)
+                            elif method=="MDP":
+                                nx=nxt_mdp(lk,tp); u_,v_=lk; ax_=sr.axis_of((v_[0]-u_[0],v_[1]-u_[1]))
+                                plan_val=tp+TM.wait(tp,ANET.offset[v_],ax_,move_of(lk,nx))+ANET.t_cross+ANET.link_t(*nx)+VMDP[nx]
                             elif method=="TDOPT_replan":
                                 p=td_from_link(lk,tp); nx=p[1]
                             else:
                                 qs=est.rates(); pl=platoons(eid,pos,t)
                                 if method in ("STATICQ","MDPQ"):
                                     VQ,_=qm.solve_values(ANET,TM,DEST,KERNEL,sedge,static=(method=="STATICQ"))
-                                    nx=qm.decide(ANET,TM,lk,tp,DEST,VQ,pl,KERNEL,off=(off if method=="MDPQ" else None))
-                                else: nx=qm.tdoptq_path(ANET,TM,lk,tp,DEST,qs,pl,sedge)[0][1]
+                                    nx,plan_val=qm.decide(ANET,TM,lk,tp,DEST,VQ,pl,KERNEL,off=(off if method=="MDPQ" else None),with_value=True)
+                                else:
+                                    pth,plan_val=qm.tdoptq_path(ANET,TM,lk,tp,DEST,qs,pl,sedge); nx=pth[1]
                             if pl is None: pl=platoons(eid,pos,t)
                             m=move_of(lk,nx)
                             if os.environ.get("SR_VERBOSE"):
@@ -409,11 +412,13 @@ def run_one(method,t0,prob,seed,rfile,timeout,meas=None):
                                 print(f"    t={t:.0f} {eid} phase={(tp-off)%C:5.1f} choose {m} | "+" | ".join(opts),flush=True)
                             qa=min(len(pl.get(l,[])) for l in qm.lanes_for(m))
                             pending[eid]={"edge":eid,"move":m,"q_ahead":qa,"t_decide":t,
-                                          "t_free":tp,"pred":predicted_pass(method,lk,nx,tp,qs,pl)}
+                                          "t_free":tp,"pred":predicted_pass(method,lk,nx,tp,qs,pl),
+                                          "q_lanes":[len(pl.get(l,[])) for l in (0,1)],"plan_arr":plan_val}
                             ne=sedge(*nx); redges.append(ne)
                             traci.vehicle.setRoute("ego",[eid,ne])
             if added and "ego" in traci.simulation.getArrivedIDList():
                 arr=t; break
+        for rec in diag: rec["arr"]=arr
         LASTRUN.update({"teleports":tpl,"route":list(redges),"arr":arr,"dep":adep,"diag":diag})
         return (arr-adep) if arr and adep else None
     finally:

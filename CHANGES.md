@@ -79,3 +79,23 @@ sumo_runner.py loads kernel_<prefix>_fold<A|B>.json by seed.
 Container pilot (seeds 11 to 13, moderate, this build, diagnostic only):
 STATIC-Q with the kernel 1188 / 1265 / 1216 s against SP-STATIC 1280 / 1265 /
 1265 s; MDP-Q 1207 / 1203 / 1281 s against MDP 1189 / 1174 / 1202 s.
+
+
+# Revision 3: value-calibration diagnostic (no change to any decision)
+
+sumo_runner.py now records, at every decision of MDP, STATIC-Q, MDP-Q and
+TD-OPT-Q, the planned arrival time of the chosen option (plan_arr), both lane
+counts ahead (q_lanes), and the realised arrival of the trip (arr) in the diag
+records; sumo_aggregate_q.py prints section E, planned against realised
+remaining time by decision index. Decisions are unchanged, so re-running a cell
+reproduces its travel times exactly; the re-run only adds the records.
+
+Purpose: the Task 0b result that MDP-Q is slower than MDP although its one-step
+predictions are accurate means the error is in the continuation values. The
+container pilot (seeds 12 and 13, moderate) shows planned remaining time
+optimistic for both planners beyond the startup constant delta (13 crossings x
+8.66 s = 113 s at the first decision): MDP +186 s at decision 1, MDP-Q +210 s;
+for MDP-Q the optimism is concentrated in decisions that continue straight with
+nobody ahead (q = 0, +131 s, n = 42) against +26 s (n = 12) when q >= 1: the
+count ahead in the ego's lane is not a sufficient statistic of the queue
+process, and the head-of-platoon state is overvalued.

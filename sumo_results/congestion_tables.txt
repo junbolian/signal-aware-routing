@@ -117,6 +117,12 @@ C. prediction diagnostic at decided stoplines: planned vs realised delay (s)
    TD-OPT-Q       S   198    0.42     24.6     26.1    +1.5    0.8
    TD-OPT-Q       L   167    0.32     21.4     22.9    +1.4    0.4
    TD-OPT-Q       R   155    0.43      3.5      5.0    +1.5    1.1
+E. value calibration: planned vs realised remaining time (s) at decision k (both exclude the per-crossing startup constant delta on the planned side)
+   method                           k=1                   k=4                   k=7                  k=10                  k=13
+   MDP                 938/ 1106 (+168)      741/  829 ( +88)      508/  592 ( +84)      298/  359 ( +61)       73/   93 ( +21)
+   SP-STATIC-Q        1042/ 1183 (+140)      802/  889 ( +86)      555/  586 ( +31)      331/  341 ( +10)       62/   72 ( +11)
+   MDP-Q               964/ 1179 (+215)      753/  889 (+135)      529/  639 (+110)      324/  378 ( +53)       77/   97 ( +20)
+   TD-OPT-Q            875/ 1097 (+221)      641/  848 (+207)      503/  633 (+130)      267/  317 ( +50)       81/   99 ( +18)
 
 === heavy demand (insertion probability 1/10) ===
 A. mean travel time

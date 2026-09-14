@@ -131,6 +131,35 @@ for label, prefix, den in LEVELS:
                        "planned": sum(pdl) / len(pdl), "realised": sum(rdl) / len(rdl), "error": me, "sd": sd}
                 lev["diagnostic"][f"{m}/{mv}"] = rec
                 print(f"   {NAMES[m]:14s} {mv:2s} {rec['n']:4d} {rec['q_ahead']:7.2f} {rec['planned']:8.1f} {rec['realised']:8.1f} {rec['error']:+7.1f} {rec['sd']:6.1f}")
+    # E. value calibration: planned remaining time of the chosen option against the
+    #    realised remaining time, by number of crossings already decided
+    if dg:
+        rows_e = {}
+        for m in ("MDP", "STATICQ", "MDPQ", "TDOPTQ"):
+            if m not in dg:
+                continue
+            trips = [[r for r in dep if "cross" in r and r.get("plan_arr") and r.get("arr")] for sd in dg[m] for dep in dg[m][sd]]
+            trips = [tr for tr in trips if tr]
+            if not trips:
+                continue
+            per_k = []
+            for k in range(13):
+                pl = [tr[k]["plan_arr"] - tr[k]["t_free"] for tr in trips if k < len(tr)]
+                re = [tr[k]["arr"] - tr[k]["t_free"] for tr in trips if k < len(tr)]
+                if pl:
+                    per_k.append({"decision": k + 1, "planned": sum(pl) / len(pl), "realised": sum(re) / len(re), "n": len(pl)})
+            rows_e[m] = per_k
+        if rows_e:
+            print("E. value calibration: planned vs realised remaining time (s) at decision k (both exclude the per-crossing startup constant delta on the planned side)")
+            ks = [1, 4, 7, 10, 13]
+            print("   " + f"{'method':14s}" + "".join(f"{'k=' + str(k):>22s}" for k in ks))
+            for m, per_k in rows_e.items():
+                cells = []
+                for k in ks:
+                    rec = next((x for x in per_k if x["decision"] == k), None)
+                    cells.append(f"{rec['planned']:7.0f}/{rec['realised']:5.0f} ({rec['realised'] - rec['planned']:+4.0f})" if rec else " " * 22)
+                print("   " + f"{NAMES[m]:14s}" + "".join(f"{c:>22s}" for c in cells))
+            lev["value_calibration"] = rows_e
     summary["levels"][label] = lev
 
 # D. empty net

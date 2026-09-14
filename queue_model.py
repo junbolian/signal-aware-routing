@@ -316,7 +316,7 @@ def _cont_obs(m, q, P_local, ax, tm, kernel, Vnext, static):
     return float(kernel.row(m, q, pb) @ Vnext[:qk.QK + 1])
 
 
-def decide(net, tm, e, t, dest, V, platoons, kernel, off=None):
+def decide(net, tm, e, t, dest, V, platoons, kernel, off=None, with_value=False):
     """Decision at the stopline of link e with observed platoons. off given:
     true local phase observed (MDP-Q); off None: unknown offset, the head
     averaged over a uniform offset and the marginal kernel (STATIC-Q)."""
@@ -335,7 +335,7 @@ def decide(net, tm, e, t, dest, V, platoons, kernel, off=None):
             val = tot / len(offs)
             if val < best[0] - 1e-9:
                 best = (val, e2)
-    return best[1]
+    return (best[1], best[0]) if with_value else best[1]
 
 
 def first_link(net, orig, V, platoons_by_edge, sedge):
