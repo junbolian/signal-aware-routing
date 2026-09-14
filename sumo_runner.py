@@ -2,22 +2,35 @@
   python3 sumo_runner.py empty
   python3 sumo_runner.py mod <METHOD> <seed>
   python3 sumo_runner.py dem <METHOD> <seed> <denom>
-METHOD is one of STATIC, GREEDY, LA1, TDOPT_open, TDOPT_replan,
-STATIC-TRAFFIC, STATIC-TRAFFIC-RT.
-Writes JSON results to sumo_results/."""
+METHOD is one of STATIC, GREEDY, LA1, MDP, TDOPT_open, TDOPT_replan,
+STATIC-TRAFFIC, STATIC-TRAFFIC-RT, STATIC-Q, MDP-Q, TDOPT-Q.
+MDP is the paper's unknown-offset local-information optimum (Proposition 7)
+executed in SUMO. The -Q methods are the queue-aware planners of
+queue_model.py: they estimate the arrival rate of every approach lane from the
+standing queues at its recent green onsets, observe the platoon ahead of the
+ego at every decision point, and carry the platoon it rides as state; MDP-Q
+solves Proposition 7's Bellman equation with the discharge-aware wait,
+STATIC-Q its phase-blind counterpart, TDOPT-Q the full-timing plan.
+Writes JSON results to sumo_results/ and, for every replanning method, a
+per-crossing prediction diagnostic to sumo_results/diag_<tag>.json."""
 import os, sys, math, json, random, heapq
 import sumo, sumolib, traci
 import signal_routing as sr
 from lookahead import static_V, la_route
+import queue_model as qm
+qm.load_calibration()
 
-SH=sumo.SUMO_HOME; SUMO_BIN=os.path.join(SH,"bin","sumo")
+SH=sumo.SUMO_HOME; SUMO_BIN=os.path.join(SH,"bin","sumo"+(".exe" if os.name=="nt" else ""))
 NETF="grid8.net.xml"
 C,GS,GL=120.0,40.0,20.0
 TM=sr.Timing(C=C,gs=GS,gl=GL,straight_first=True,rtor=True)
 N=8; ORIG,DEST=(7,0),(0,7); V_FREE=8.33
 T0S=[0.0,30.0,60.0,90.0]; DECIDE=45.0
 MEAS_WIN=240.0; MEAS_EVERY=20.0
-ALIAS={"STATIC-TRAFFIC":"STATICTRAFFIC","STATIC-TRAFFIC-RT":"STATICTRAFFICRT"}
+ALIAS={"STATIC-TRAFFIC":"STATICTRAFFIC","STATIC-TRAFFIC-RT":"STATICTRAFFICRT",
+       "STATIC-Q":"STATICQ","MDP-Q":"MDPQ","TDOPT-Q":"TDOPTQ"}
+QMETH=("STATICQ","MDPQ","TDOPTQ")
+ROLLING=("GREEDY","LA1","MDP","TDOPT_replan")+QMETH
 RT_VMIN=2.0
 LASTRUN={}
 os.makedirs("sumo_results",exist_ok=True)
@@ -30,6 +43,8 @@ rng=random.Random(1000)
 ANET=sr.Net(N,rng,C=C,link_lo=TAU0,link_hi=TAU0,offset_mode="random")
 VSTAT=static_V(ANET,TM,DEST)
 def sedge(u,v): return nid(u)+nid(v)
+VMDP0,_,_=qm.solve_values(ANET,TM,DEST,{},sedge)   # Proposition 7 value, no queues
+VMDP={e:float(v[0]) for e,v in VMDP0.items()}
 def e2l(eid):
     if len(eid)==4 and eid[0] in "ABCDEFGH" and eid[2] in "ABCDEFGH":
         return ((ord(eid[0])-65,int(eid[1])),(ord(eid[2])-65,int(eid[3])))
@@ -167,6 +182,74 @@ class MeasNet:
     def __init__(self,meas): self.meas=meas; self.t_cross=ANET.t_cross; self.N=ANET.N
     def nbrs(self,v): return ANET.nbrs(v)
     def link_t(self,u,v): return self.meas[sedge(u,v)]
+    # the topology queries are ANET's; only the link-time vector is replaced
+    def axis(self,v,h): return ANET.axis(v,h)
+    def move_type(self,v,h,d): return ANET.move_type(v,h,d)
+    def dist(self,v,dest): return ANET.dist(v,dest)
+
+APPROACH_LANES=[(e.getID(),l.getIndex(),l.getID()) for e in net.getEdges()
+                if e2l(e.getID()) for l in e.getLanes()]
+JLANES={}   # junction id -> [(edge id, lane index, lane id, through phase index)]
+for eid,li,lid in APPROACH_LANES:
+    u,v=e2l(eid); h=(v[0]-u[0],v[1]-u[1])
+    JLANES.setdefault(nid(v),[]).append((eid,li,lid,0 if sr.axis_of(h)=="NS" else 2))
+HALT=traci.constants.LAST_STEP_VEHICLE_HALTING_NUMBER
+
+class RateEstimator:
+    """Arrival-rate estimate per approach lane, what a traffic-aware router
+    learns from probe data: the standing queue counted at each through-green
+    onset divided by the through red, averaged over the last ONSET_WINDOW
+    onsets of that lane. Fed from lane subscriptions each step."""
+    def __init__(self):
+        self.onsets={k:[] for k in ((eid,li) for eid,li,_ in APPROACH_LANES)}
+        for _,_,lid in APPROACH_LANES: traci.lane.subscribe(lid,[HALT])
+        self.rS=C-GS
+    def observe(self,T,t):
+        """Call right after simulationStep at time t: the results describe the
+        state at t, before drive() applies the phase of time t."""
+        res=traci.lane.getAllSubscriptionResults()
+        for tid,(off,st) in T.items():
+            i_now=pidx((t-off)%C); i_prev=pidx((t-1-off)%C)
+            if i_now==i_prev or tid not in JLANES: continue
+            for eid,li,lid,tidx in JLANES[tid]:
+                if tidx==i_now:
+                    self.onsets[(eid,li)].append(res[lid][HALT])
+    def rates(self):
+        out={}
+        for k,q in self.onsets.items():
+            w=q[-qm.ONSET_WINDOW:]
+            out[k]=(sum(w)/len(w))/self.rS if w else 0.0
+        return out
+
+def platoons(eid,ego_pos,t):
+    """Vehicles ahead of the ego on each lane of its current edge, as unimpeded
+    stopline arrival times ordered nearest-first; a standing vehicle (speed
+    below 0.1 m/s) is already at the queue and is given arrival time t."""
+    out={}
+    for li in range(net.getEdge(eid).getLaneNumber()):
+        lid=f"{eid}_{li}"; rows=[]
+        for vid in traci.lane.getLastStepVehicleIDs(lid):
+            if vid=="ego": continue
+            pos=traci.vehicle.getLanePosition(vid)
+            if pos<=ego_pos: continue
+            arr=t if traci.vehicle.getSpeed(vid)<0.1 else t+(ELEN[eid]-pos)/V_FREE
+            rows.append((pos,arr))
+        rows.sort(reverse=True)
+        out[li]=[a for _,a in rows]
+    return out
+
+def move_of(e,e2):
+    (u,v),(v2,w)=e,e2
+    return sr.move_type((v[0]-u[0],v[1]-u[1]),(w[0]-v2[0],w[1]-v2[1]))
+
+def predicted_pass(method,e,e2,tp,qs,pl):
+    """Planned stopline passage time of the chosen movement, for the
+    prediction diagnostic: TM.wait for the queue-ignorant planners, the
+    discharge model (or its phase expectation for STATIC-Q) for the -Q ones."""
+    (u,v)=e; m=move_of(e,e2); ax=sr.axis_of((v[0]-u[0],v[1]-u[1]))
+    if method=="STATICQ": return tp+qm.head_ewait(tp,ax,m,TM,pl)
+    if method in ("MDPQ","TDOPTQ"): return qm.head_pass(tp,ANET.offset[v],ax,m,TM,pl)
+    return tp+TM.wait(tp,ANET.offset[v],ax,m)
 
 def nxt_greedy(e,t):
     u,v=e; h=(v[0]-u[0],v[1]-u[1]); opts={}
@@ -192,7 +275,32 @@ def nxt_la1(e,t):
         if val<bm[0]-1e-9: bm=(val,(v,w))
     return bm[1]
 
-def first_link(method,t0,meas=None):
+def mdp_first_link(V):
+    best=(1e18,None)
+    for w,d in ANET.nbrs(ORIG):
+        c=ANET.link_t(ORIG,w)+V[(ORIG,w)]
+        if c<best[0]-1e-9: best=(c,(ORIG,w))
+    return best[1]
+
+def nxt_mdp(e,t):
+    """Proposition 7's threshold rule: observed local waits plus continuation
+    constants, over the L1-monotone movements."""
+    u,v=e; ax=sr.axis_of((v[0]-u[0],v[1]-u[1])); bm=(1e18,None)
+    for m,e2,_ in qm.monotone_moves(ANET,e,DEST):
+        val=TM.wait(t,ANET.offset[v],ax,m)+ANET.t_cross+ANET.link_t(*e2)+VMDP[e2]
+        if val<bm[0]-1e-9: bm=(val,e2)
+    return bm[1]
+
+def first_link(method,t0,meas=None,qs=None,pbe=None):
+    """qs: arrival-rate estimate per approach lane; pbe: observed platoons on
+    each candidate first edge (the ego sees its first link at departure)."""
+    if method=="MDP":
+        return mdp_first_link(VMDP),None
+    if method in ("STATICQ","MDPQ"):
+        V,Vf,_=qm.solve_values(ANET,TM,DEST,qs,sedge,static=(method=="STATICQ"))
+        return qm.first_link(ANET,ORIG,V,Vf,pbe,sedge),None
+    if method=="TDOPTQ":
+        return qm.tdoptq_first_link(ANET,TM,ORIG,t0,DEST,qs,pbe,sedge),None
     if method=="STATICTRAFFIC":
         p=traffic_route(meas,ORIG,DEST); return p[0],p
     if method=="STATICTRAFFICRT":
@@ -232,49 +340,87 @@ def run_one(method,t0,prob,seed,rfile,timeout,meas=None):
         T=tls_tables(); cache={}
         warm=240.0 if prob>0 else 0.0
         depart=warm+t0
-        e0,preset=first_link(method,depart,meas)
-        if method=="TDOPT_replan":
-            redges=[sedge(*e0)]
-        else:
-            redges=[sedge(*l) for l in preset] if preset else [sedge(*e0)]
-        traci.route.add("egoR",redges)
+        redges=None
+        if method not in QMETH:
+            e0,preset=first_link(method,depart,meas)
+            if method=="TDOPT_replan":
+                redges=[sedge(*e0)]
+            else:
+                redges=[sedge(*l) for l in preset] if preset else [sedge(*e0)]
+            traci.route.add("egoR",redges)
         added=False; adep=None; arr=None; decided=set(); tpl=[]
+        pending={}; diag=[]; last_edge=None
+        est=RateEstimator() if method in QMETH else None
         t=0.0
         while t<timeout:
             drive(T,cache,t)
             traci.simulationStep(); t=traci.simulation.getTime()
+            if est is not None: est.observe(T,t)
             tpl+= list(traci.simulation.getStartingTeleportIDList())
             if not added and t>=depart:
+                if method in QMETH:
+                    pbe={sedge(ORIG,w):platoons(sedge(ORIG,w),-1.0,t) for w,_ in ANET.nbrs(ORIG)}
+                    e0,_=first_link(method,depart,qs=est.rates(),pbe=pbe)
+                    redges=[sedge(*e0)]; traci.route.add("egoR",redges)
                 traci.vehicle.add("ego","egoR",typeID="egoT",departPos="0",
                     departLane="best",arrivalPos=str(ELEN[redges[-1]]-10.0))
                 added=True
             if added and adep is None and "ego" in traci.vehicle.getIDList():
                 adep=t
-            if added and adep is not None and "ego" in traci.vehicle.getIDList() \
-               and method in ("GREEDY","LA1","TDOPT_replan"):
+            if added and adep is not None and "ego" in traci.vehicle.getIDList():
                 eid=traci.vehicle.getRoadID("ego")
-                if eid==redges[-1] and eid not in decided and e2l(eid):
+                if last_edge is not None and eid!=last_edge and last_edge in pending:
+                    rec=pending.pop(last_edge); rec["cross"]=t; diag.append(rec)
+                last_edge=eid
+                if method in ROLLING and eid==redges[-1] and eid not in decided and e2l(eid):
                     lk=e2l(eid)
                     if lk[1]!=DEST:
                         pos=traci.vehicle.getLanePosition("ego")
                         if pos>ELEN[eid]-DECIDE:
                             decided.add(eid)
                             tp=t+(ELEN[eid]-pos)/V_FREE
+                            qs=pl=None
+                            off=ANET.offset[lk[1]]
                             if method=="GREEDY": nx=nxt_greedy(lk,tp)
                             elif method=="LA1": nx=nxt_la1(lk,tp)
-                            else:
+                            elif method=="MDP": nx=nxt_mdp(lk,tp)
+                            elif method=="TDOPT_replan":
                                 p=td_from_link(lk,tp); nx=p[1]
+                            else:
+                                qs=est.rates(); pl=platoons(eid,pos,t)
+                                if method in ("STATICQ","MDPQ"):
+                                    VQ,VfQ,_=qm.solve_values(ANET,TM,DEST,qs,sedge,static=(method=="STATICQ"))
+                                    nx=qm.decide(ANET,TM,lk,tp,DEST,VQ,VfQ,pl,off=(off if method=="MDPQ" else None))
+                                else: nx=qm.tdoptq_path(ANET,TM,lk,tp,DEST,qs,pl,sedge)[0][1]
+                            if pl is None: pl=platoons(eid,pos,t)
+                            m=move_of(lk,nx)
+                            if os.environ.get("SR_VERBOSE"):
+                                opts=[]
+                                for mm,e2,ax in qm._moves(ANET,lk):
+                                    hp=(qm.head_pass(tp,off,ax,mm,TM,pl)-tp) if qs is not None else TM.wait(tp,off,ax,mm)
+                                    qmin=min(len(pl.get(l,[])) for l in qm.lanes_for(mm))
+                                    if method=="MDP": tv=VMDP[e2]
+                                    elif method=="LA1": tv=VSTAT[e2]
+                                    elif method in ("STATICQ","MDPQ"): tv=qm._cont(VQ,VfQ,mm,e2,qmin)
+                                    else: tv=float("nan")
+                                    opts.append(f"{mm}:head={hp:5.1f} q={[len(pl.get(l,[])) for l in qm.lanes_for(mm)]} tail={tv:7.1f}")
+                                print(f"    t={t:.0f} {eid} phase={(tp-off)%C:5.1f} choose {m} | "+" | ".join(opts),flush=True)
+                            qa=min(len(pl.get(l,[])) for l in qm.lanes_for(m))
+                            pending[eid]={"edge":eid,"move":m,"q_ahead":qa,"t_decide":t,
+                                          "t_free":tp,"pred":predicted_pass(method,lk,nx,tp,qs,pl)}
                             ne=sedge(*nx); redges.append(ne)
                             traci.vehicle.setRoute("ego",[eid,ne])
             if added and "ego" in traci.simulation.getArrivedIDList():
                 arr=t; break
-        LASTRUN.update({"teleports":tpl,"route":list(redges),"arr":arr,"dep":adep})
+        LASTRUN.update({"teleports":tpl,"route":list(redges),"arr":arr,"dep":adep,"diag":diag})
         return (arr-adep) if arr and adep else None
     finally:
         traci.close()
 
-def save(tag,rec):
+def save(tag,rec,diag=None):
     with open(f"sumo_results/{tag}.json","w") as f: json.dump(rec,f)
+    if diag:
+        with open(f"sumo_results/diag_{tag}.json","w") as f: json.dump(diag,f)
 
 def measure_one(method,prob,seed,rfile):
     """Traffic snapshot, taken once per seed and reused across the four
@@ -289,7 +435,7 @@ def measure_one(method,prob,seed,rfile):
 
 def report(method,row):
     print(*row,flush=True)
-    if method in ("STATICTRAFFIC","STATICTRAFFICRT"):
+    if method in ("STATICTRAFFIC","STATICTRAFFICRT")+QMETH:
         tp=LASTRUN.get("teleports",[])
         print("   route",">".join(LASTRUN.get("route",[])),"teleports",len(tp),
               (tp if tp else ""),flush=True)
@@ -318,17 +464,17 @@ if __name__=="__main__":
         prob=1.0/den; rf=f"dem{den}.rou.xml"
         routes_file(rf,prob)
         meas=measure_one(method,prob,seed,rf)
-        rec=[]
+        rec=[]; dg=[]
         for t0 in T0S:
             r=run_one(method,t0,prob,seed,rf,3600,meas)
-            rec.append(r); report(method,("dem",den,method,seed,t0,r))
-        save(f"dem{den}_{method}_{seed}",rec)
+            rec.append(r); report(method,("dem",den,method,seed,t0,r)); dg.append(LASTRUN.get("diag",[]))
+        save(f"dem{den}_{method}_{seed}",rec,dg)
     else:
         method=ALIAS.get(sys.argv[2],sys.argv[2]); seed=int(sys.argv[3])
         routes_file("mod.rou.xml",1.0/15.0)
         meas=measure_one(method,1.0/15.0,seed,"mod.rou.xml")
-        rec=[]
+        rec=[]; dg=[]
         for t0 in T0S:
             r=run_one(method,t0,1.0/15.0,seed,"mod.rou.xml",2600,meas)
-            rec.append(r); report(method,(method,seed,t0,r))
-        save(f"mod_{method}_{seed}",rec)
+            rec.append(r); report(method,(method,seed,t0,r)); dg.append(LASTRUN.get("diag",[]))
+        save(f"mod_{method}_{seed}",rec,dg)

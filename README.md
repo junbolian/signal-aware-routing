@@ -3,7 +3,7 @@
 Companion code for the paper:
 
 > **Routing Through Traffic Signals: The Value, Depth, and Accuracy of Phase Information**
-> Junbo Jacob Lian, Xing Liu, Zheng Chen, Chaoyu Zhang, and Zeshui Xu, working paper, 2026.
+> Author names withheld for double-anonymous review, working paper, 2026.
 
 Navigation systems route with traffic signals summarized as static average turn
 penalties; real-time phase information is used only for display and speed advisory.
@@ -52,7 +52,11 @@ check_uniform.py       Uniform-arrival-phase sanity check (Lemma 3).
 mdp_policy.py          Unknown-offset MDP: value iteration, threshold policy,
                        simulation validation (Prop 6).
 sumo_runner.py         SUMO microscopic experiments (empty and congested).
-sumo_aggregate.py      Paired statistics and tables from SUMO outputs.
+queue_model.py         Queue-aware planners (STATIC-Q, MDP-Q, TDOPT-Q) and the MDP in SUMO.
+calibrate_discharge.py Discharge-law calibration from background traffic.
+run_congestion.sh      Full congestion sweep on one build (resumable).
+sumo_aggregate.py      Paired statistics and tables from SUMO outputs (original).
+sumo_aggregate_q.py    Tables and diagnostics of the queue-aware benchmark.
 make_figures.py        Regenerates all paper figures into figures/.
 raw_results.csv        Per-instance results of the grid study.
 summary.csv            Aggregated grid-study results.
@@ -89,6 +93,7 @@ pip install eclipse-sumo sumolib traci
 | SUMO validation and congestion | `python sumo_runner.py empty`, `python sumo_runner.py mod METHOD SEED`, `python sumo_runner.py dem METHOD SEED DENOM`, then `python sumo_aggregate.py` |
 | STATIC-TRAFFIC baseline | `python sumo_runner.py mod STATIC-TRAFFIC SEED`, `python sumo_runner.py dem STATIC-TRAFFIC SEED DENOM` |
 | STATIC-TRAFFIC-RT baseline | `python sumo_runner.py mod STATIC-TRAFFIC-RT SEED`, `python sumo_runner.py dem STATIC-TRAFFIC-RT SEED DENOM` |
+| Queue-aware congestion benchmark | `./run_congestion.sh`, then `python sumo_aggregate_q.py` |
 | All figures | `python make_figures.py` |
 
 `grid8.net.xml` is tracked. It was built with:
@@ -130,10 +135,31 @@ MIT. See `LICENSE`.
 ## Citation
 
 ```bibtex
-@unpublished{lian2026signals,
-  author = {Lian, Junbo Jacob and Liu, Xing and Chen, Zheng and Zhang, Chaoyu and Xu, Zeshui},
+@unpublished{signals2026routing,
+  author = {Author names withheld for review},
   title  = {Routing Through Traffic Signals: The Value, Depth, and Accuracy of Phase Information},
   note   = {Working paper},
   year   = {2026}
 }
 ```
+
+## Queue-aware congestion benchmark (added Sep 2026)
+
+Files: `queue_model.py` (queue-aware planners STATIC-Q, MDP-Q, TDOPT-Q and the
+paper's MDP executed in SUMO), `calibrate_discharge.py` (fits the release law
+of standing queues, writes `discharge_calibration.json`: HS = 2.37 s,
+LS = -0.5 s), `run_congestion.sh` (the full sweep, resumable),
+`sumo_aggregate_q.py` (tables, paired differences, prediction diagnostic).
+
+```bash
+pip install eclipse-sumo==1.27.1 sumolib==1.27.1 traci==1.27.1 numpy
+python3 calibrate_discharge.py 15,10 11,12 900     # optional: re-fit HS and LS
+./run_congestion.sh                                 # ~4 h on one core, resumable
+python3 sumo_aggregate_q.py                         # prints tables, writes sumo_results/congestion_summary.json
+```
+
+Multi-vehicle SUMO runs are not reproducible across builds, so every method
+of the congestion tables must come from the same sweep; `sumo_results/` holds
+one build's results only. The per-crossing prediction records in
+`sumo_results/diag_*.json` compare each rolling planner's planned stopline
+passage with the realised one.

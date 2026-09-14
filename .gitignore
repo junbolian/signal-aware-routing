@@ -10,3 +10,5 @@ __pycache__/
 *.rou.xml
 *.net.xml
 !grid8.net.xml
+*.osm
+real.net.xml
