@@ -1,0 +1,67 @@
+Network-clustered 95 percent intervals for the grid study
+The mean is the pooled mean and does not change; the interval is
+recomputed over network means (the eight departures of a network
+are aggregated first). ratio = clustered / per-instance.
+
+table                      row                  column                         mean   +- inst  +- clust  ratio     n  nets
+--------------------------------------------------------------------------------------------------------------------------
+Table 1 (base scenario)    SP-FF                gap vs TD-OPT (%)             17.09      0.87      2.25   2.59   480    60
+                           SP-FF                wait (s)                     319.62      8.31     22.00   2.65   480    60
+                           SP-FF                stops                          7.13      0.15      0.40   2.68   480    60
+                           SP-STATIC            gap vs TD-OPT (%)             15.42      0.82      2.10   2.58   480    60
+                           SP-STATIC            wait (s)                     293.18      7.85     20.58   2.62   480    60
+                           SP-STATIC            stops                          6.44      0.12      0.31   2.62   480    60
+                           GREEDY               gap vs TD-OPT (%)             22.03      0.97      1.79   1.85   480    60
+                           GREEDY               wait (s)                     224.58      7.56     14.17   1.87   480    60
+                           GREEDY               stops                          6.10      0.18      0.33   1.82   480    60
+                           TD-OPT               gap vs TD-OPT (%)              0.00      0.00      0.00    nan   480    60
+                           TD-OPT               wait (s)                      87.66      3.52      6.23   1.77   480    60
+                           TD-OPT               stops                          3.97      0.12      0.19   1.63   480    60
+Scenario ablations         base_N8              SP-STATIC gap (%)             15.42      0.82      2.10   2.58   480    60
+                           base_N8              GREEDY gap (%)                22.03      0.97      1.79   1.85   480    60
+                           base_N8              TD-OPT time (s)              953.70      4.44     10.22   2.30   480    60
+                           no_rtor              SP-STATIC gap (%)             19.30      0.98      2.63   2.67   480    60
+                           no_rtor              GREEDY gap (%)                26.57      0.81      2.10   2.60   480    60
+                           no_rtor              TD-OPT time (s)             1006.26      5.06     12.06   2.38   480    60
+                           left_first           SP-STATIC gap (%)             15.89      0.81      2.02   2.49   480    60
+                           left_first           GREEDY gap (%)                26.80      1.12      2.13   1.89   480    60
+                           left_first           TD-OPT time (s)              950.03      4.60     10.98   2.39   480    60
+                           sync_zero            SP-STATIC gap (%)             12.26      0.85      2.21   2.59   480    60
+                           sync_zero            GREEDY gap (%)                29.22      1.43      2.86   2.00   480    60
+                           sync_zero            TD-OPT time (s)              996.05      5.84     14.63   2.51   480    60
+                           progressive          SP-STATIC gap (%)              8.66      0.64      1.55   2.43   480    60
+                           progressive          GREEDY gap (%)                11.57      0.78      1.33   1.70   480    60
+                           progressive          TD-OPT time (s)              924.92      3.88      7.46   1.92   480    60
+                           grid_N5              SP-STATIC gap (%)             12.29      1.06      2.25   2.13   320    40
+                           grid_N5              GREEDY gap (%)                17.81      1.56      2.60   1.67   320    40
+                           grid_N5              TD-OPT time (s)              546.59      4.76     10.68   2.24   320    40
+                           grid_N12             SP-STATIC gap (%)             16.31      0.81      2.11   2.59   320    40
+                           grid_N12             GREEDY gap (%)                24.52      1.05      2.03   1.93   320    40
+                           grid_N12             TD-OPT time (s)             1476.09      6.00     14.15   2.36   320    40
+VOI (accuracy sweep)       sigma = 0 s          gap vs TD-OPT (%)              0.00      0.00      0.00    nan   320    40
+                           sigma = 5 s          gap vs TD-OPT (%)              2.43      0.51      0.73   1.41   320    40
+                           sigma = 10 s         gap vs TD-OPT (%)              6.35      0.79      0.98   1.23   320    40
+                           sigma = 20 s         gap vs TD-OPT (%)             11.48      1.05      1.18   1.12   320    40
+                           sigma = 30 s         gap vs TD-OPT (%)             15.80      1.15      1.44   1.24   320    40
+                           sigma = 45 s         gap vs TD-OPT (%)             19.87      1.16      1.56   1.34   320    40
+                           sigma = 60 s         gap vs TD-OPT (%)             22.23      1.17      1.48   1.27   320    40
+Table 3 (LA-k x sigma)     k = 0 (SP-STATIC)    sigma = 0 s                   16.22      1.07      2.78   2.59   320    40
+                           k = 1                sigma = 0 s                    9.65      0.93      1.92   2.07   320    40
+                           k = 1                sigma = 5 s                   10.49      0.98      1.96   2.01   320    40
+                           k = 1                sigma = 10 s                  10.58      0.95      1.95   2.05   320    40
+                           k = 2                sigma = 0 s                    5.33      0.69      1.30   1.89   320    40
+                           k = 2                sigma = 5 s                    7.38      0.92      1.78   1.93   320    40
+                           k = 2                sigma = 10 s                   9.93      1.11      2.02   1.83   320    40
+                           k = 3                sigma = 0 s                    3.55      0.57      1.07   1.88   320    40
+                           k = 3                sigma = 5 s                    6.12      0.76      1.58   2.07   320    40
+                           k = 3                sigma = 10 s                   6.37      0.81      1.46   1.80   320    40
+                           k = 4                sigma = 0 s                    2.76      0.50      1.04   2.08   320    40
+                           k = 4                sigma = 5 s                    4.47      0.67      1.30   1.93   320    40
+                           k = 4                sigma = 10 s                   5.47      0.71      1.31   1.84   320    40
+                           k = 5                sigma = 0 s                    1.38      0.40      0.82   2.03   320    40
+                           k = 5                sigma = 5 s                    3.38      0.62      1.22   1.97   320    40
+                           k = 5                sigma = 10 s                   5.45      0.80      1.65   2.07   320    40
+Proposition 7              MDP                  gap vs TD-OPT (%)             10.35      0.89      1.99   2.24   320    40
+                           LA-1 minus MDP       paired difference (s)         -6.70      7.83     15.12   1.93   320    40
+
+ratio over 56 cells: min 1.12, median 2.03, max 2.68

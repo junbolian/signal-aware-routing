@@ -1,5 +1,5 @@
 """Consolidated publication figures: 5 files into paper/."""
-import csv, math, random, glob, json
+import csv, math, os, random, glob, json
 import matplotlib; matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import signal_routing as sr
@@ -89,7 +89,7 @@ cx=sum(ax_)/len(ax_); cy=sum(ay_)/len(ay_)
 a1.plot([2,23],[cy-7*(x-cx) for x in (2,23)],ls=":",lw=1,color="#000000",label="prediction slope $-J/2$")
 a1.axhline(0,color="k",lw=.7)
 a1.set_xlabel("Gini mean difference $\\Delta$ (s)")
-a1.set_ylabel("GREEDY $-$ SP-STATIC (s)")
+a1.set_ylabel("SP-STATIC $-$ GREEDY (s)")
 a1.legend(loc="lower left")
 grids=[5,8,12]
 for m,c,mk in (("SP-STATIC","st","s"),("GREEDY","gr","^")):
@@ -135,7 +135,7 @@ fig.savefig("figures/fig4_lookahead.png"); plt.close(fig)
 # Fig 5 (sumo): restyle only, same content, keep filename fig8_sumo.png
 mod={}
 for f in glob.glob("sumo_results/mod_*.json"):
-    p=f.split("/")[-1][:-5].split("_"); meth="_".join(p[1:-1])
+    p=os.path.basename(f)[:-5].split("_"); meth="_".join(p[1:-1])
     mod.setdefault(meth,[]).extend(x for x in json.load(open(f)) if x)
 names=[("SP-STATIC","STATIC","st"),("GREEDY","GREEDY","gr"),("LA-1","LA1","la"),
        ("TD-OPT open","TDOPT_open","ff"),("TD-OPT replan","TDOPT_replan","mdp")]

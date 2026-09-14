@@ -27,12 +27,13 @@ RESDIR=os.environ.get("SR_RESULTS","sumo_results")   # SR_RESULTS selects the re
 C,GS,GL=120.0,40.0,20.0
 TM=sr.Timing(C=C,gs=GS,gl=GL,straight_first=True,rtor=True)
 N=8; ORIG,DEST=(7,0),(0,7); V_FREE=8.33
-T0S=[0.0,30.0,60.0,90.0]; DECIDE=45.0
+T0S=[0.0,30.0,60.0,90.0]; DECIDE=float(os.environ.get("SR_DECIDE","45.0"))   # SR_DECIDE: decision point, metres before the stopline
 MEAS_WIN=240.0; MEAS_EVERY=20.0
 ALIAS={"STATIC-TRAFFIC":"STATICTRAFFIC","STATIC-TRAFFIC-RT":"STATICTRAFFICRT",
        "STATIC-Q":"STATICQ","MDP-Q":"MDPQ","TDOPT-Q":"TDOPTQ"}
 QMETH=("STATICQ","MDPQ","TDOPTQ")
-ROLLING=("GREEDY","LA1","MDP","TDOPT_replan")+QMETH
+LAK={"LA2":2,"LA3":3,"LA4":4,"LA5":5}
+ROLLING=("GREEDY","LA1","MDP","TDOPT_replan")+tuple(LAK)+QMETH
 RT_VMIN=2.0
 LASTRUN={}
 os.makedirs(RESDIR,exist_ok=True)
@@ -281,6 +282,31 @@ def nxt_greedy(e,t):
         if m in opts: return opts[m]
     raise RuntimeError("dead end")
 
+def nxt_lak(e,t,k):
+    """Rolling LA-k: first move of the path minimising true waits over the next k
+    crossings plus the static value beyond (LA-1 = nxt_la1)."""
+    def moves(e):
+        u,v=e; h=(v[0]-u[0],v[1]-u[1]); out=[]
+        for w,d in ANET.nbrs(v):
+            if w==u: continue
+            m=sr.move_type(h,d)
+            if m is not None: out.append((m,(v,w),sr.axis_of(h)))
+        return out
+    def rec(e,t,d):
+        if e[1]==DEST: return t
+        if d==k: return t+VSTAT[e]
+        best=float("inf"); u,v=e
+        for m,e2,ax in moves(e):
+            t2=t+TM.wait(t,ANET.offset[v],ax,m)+ANET.t_cross+ANET.link_t(*e2)
+            best=min(best,rec(e2,t2,d+1))
+        return best
+    bm=(1e18,None); u,v=e
+    for m,e2,ax in moves(e):
+        t2=t+TM.wait(t,ANET.offset[v],ax,m)+ANET.t_cross+ANET.link_t(*e2)
+        val=rec(e2,t2,1)
+        if val<bm[0]-1e-9: bm=(val,e2)
+    return bm[1]
+
 def nxt_la1(e,t):
     u,v=e; h=(v[0]-u[0],v[1]-u[1]); bm=(1e18,None)
     for w,d in ANET.nbrs(v):
@@ -328,6 +354,8 @@ def first_link(method,t0,meas=None,qs=None,pbe=None):
         p,_=sr.td_route(ANET,TM,ORIG,DEST,t0); return p[0],p
     if method=="GREEDY":
         return sr.greedy_route(ANET,TM,ORIG,DEST,t0)[0],None
+    if method in LAK:
+        p=la_route(ANET,TM,ORIG,DEST,t0,LAK[method],VSTAT); return p[0],None
     if method=="LA1":
         return la_route(ANET,TM,ORIG,DEST,t0,1,VSTAT)[0],None
     raise ValueError(method)
@@ -400,6 +428,7 @@ def run_one(method,t0,prob,seed,rfile,timeout,meas=None):
                             off=ANET.offset[lk[1]]
                             if method=="GREEDY": nx=nxt_greedy(lk,tp)
                             elif method=="LA1": nx=nxt_la1(lk,tp)
+                            elif method in LAK: nx=nxt_lak(lk,tp,LAK[method])
                             elif method=="MDP":
                                 nx=nxt_mdp(lk,tp); u_,v_=lk; ax_=sr.axis_of((v_[0]-u_[0],v_[1]-u_[1]))
                                 plan_val=tp+TM.wait(tp,ANET.offset[v_],ax_,move_of(lk,nx))+ANET.t_cross+ANET.link_t(*nx)+VMDP[nx]
@@ -420,7 +449,7 @@ def run_one(method,t0,prob,seed,rfile,timeout,meas=None):
                                     hp=(qm.head_pass(tp,off,ax,mm,TM,pl)-tp) if qs is not None else TM.wait(tp,off,ax,mm)
                                     qmin=min(len(pl.get(l,[])) for l in qm.lanes_for(mm))
                                     if method=="MDP": tv=VMDP[e2]
-                                    elif method=="LA1": tv=VSTAT[e2]
+                                    elif method=="LA1" or method in LAK: tv=VSTAT[e2]
                                     elif method in ("STATICQ","MDPQ"): tv=float(VQ[e2][min(qmin,qm.QMAX)])
                                     else: tv=float("nan")
                                     opts.append(f"{mm}:head={hp:5.1f} q={[len(pl.get(l,[])) for l in qm.lanes_for(mm)]} tail={tv:7.1f}")
@@ -483,11 +512,15 @@ if __name__=="__main__":
         save("empty",rec)
     elif mode=="dem":
         method=ALIAS.get(sys.argv[2],sys.argv[2]); seed=int(sys.argv[3]); den=int(sys.argv[4])
-        prob=1.0/den; rf=f"dem{den}.rou.xml"
+        prob=(1.0/den) if den>0 else 0.0; rf=f"dem{den}.rou.xml"
         routes_file(rf,prob)
         meas=measure_one(method,prob,seed,rf)
         rec=[]; dg=[]
-        for t0 in T0S:
+        # den = 0 is the empty network: seeds carry no randomness there, so the four
+        # departures of seed s are shifted by 12 (s - 11) s to spread the departure
+        # phase over the cycle (ten seeds x four departures = forty distinct phases)
+        deps=[(t0+12.0*(seed-11))%C for t0 in T0S] if den==0 else T0S
+        for t0 in deps:
             r=run_one(method,t0,prob,seed,rf,3600,meas)
             rec.append(r); report(method,("dem",den,method,seed,t0,r)); dg.append(LASTRUN.get("diag",[]))
         save(f"dem{den}_{method}_{seed}",rec,dg)

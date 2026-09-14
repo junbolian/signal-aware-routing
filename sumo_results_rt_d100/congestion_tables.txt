@@ -1,0 +1,39 @@
+
+=== moderate demand (insertion probability 1/15) ===
+A. mean travel time
+   SP-STATIC          n= 40   1202.9 +-  10.5
+   LA-1               n= 40   1015.5 +-  16.6
+   MDP                n= 40   1039.1 +-  15.2
+   TD-OPT replan      n= 40   1008.4 +-  20.1
+   TD-OPT-Q           n= 40   1027.3 +-  17.3
+B. paired differences a - b (s): per-instance CI | seed-clustered CI | a faster in
+   -- queue information, by phase regime
+   TD-OPT-Q         - TD-OPT replan      +18.9 +-  22.4 | +-  22.8 (10 seeds) | 13/40
+   -- phase information, queue-ignorant
+   MDP              - SP-STATIC         -163.8 +-  20.5 | +-  18.3 (10 seeds) | 39/40
+   LA-1             - SP-STATIC         -187.4 +-  17.4 | +-  17.7 (10 seeds) | 40/40
+   TD-OPT replan    - SP-STATIC         -194.5 +-  22.2 | +-  23.0 (10 seeds) | 40/40
+   TD-OPT replan    - MDP                -30.7 +-  15.0 | +-  15.2 (10 seeds) | 24/40
+   -- deployable rule against the queue-aware ladder
+   LA-1             - MDP                -23.6 +-  12.5 | +-   4.6 (10 seeds) | 15/40
+   LA-1             - TD-OPT-Q           -11.8 +-  19.5 | +-  17.1 (10 seeds) | 21/40
+C. prediction diagnostic at decided stoplines: planned vs realised delay (s)
+   method         mv    n q_ahead  planned realised   error     sd
+   LA-1           S   226    1.30     10.7     16.0    +5.4   13.0
+   LA-1           L   129    0.00      7.9     11.0    +3.1   12.4
+   LA-1           R   165    0.00      0.0      2.0    +2.0    0.4
+   MDP            S   205    1.31     10.6     16.6    +6.1   13.6
+   MDP            L   144    0.00     14.9     17.7    +2.9   11.8
+   MDP            R   171    0.00      0.0      2.0    +2.0    0.5
+   TD-OPT replan  S   265    1.20      7.2     11.9    +4.8   12.9
+   TD-OPT replan  L   118    0.00     10.0     13.3    +3.3   13.0
+   TD-OPT replan  R   137    0.00      0.0      2.0    +2.0    0.4
+   TD-OPT-Q       S   216    0.92     10.6     12.5    +1.8    0.8
+   TD-OPT-Q       L   145    0.00     17.2     19.4    +2.3    8.4
+   TD-OPT-Q       R   159    0.00      0.0      1.9    +1.9    0.4
+E. value calibration: planned vs realised remaining time (s) at decision k (both exclude the per-crossing startup constant delta on the planned side)
+   method                           k=1                   k=4                   k=7                  k=10                  k=13
+   MDP                 913/  978 ( +65)      709/  744 ( +35)      502/  537 ( +35)      288/  326 ( +39)       90/  100 (  +9)
+   TD-OPT-Q            819/  966 (+147)      653/  754 (+101)      465/  537 ( +72)      272/  299 ( +27)       76/   84 (  +8)
+
+wrote sumo_results_rt_d100\congestion_summary.json

@@ -1,0 +1,109 @@
+
+=== demand empty ===
+   SP-STATIC      n= 80  1198.1 +-   7.6
+   LA-1           n= 80  1021.0 +-  14.9
+   LA-2           n= 80   990.1 +-   8.1
+   LA-3           n= 80   962.7 +-   9.2
+   TD-OPT replan  n= 80   997.7 +-  14.9
+   TD-OPT-Q       n= 80  1035.8 +-  15.7
+   SP-STATIC      - TD-OPT-Q       +162.3 +-  16.5 | +-  10.8 (20 seeds) | 0/80
+   LA-1           - SP-STATIC      -177.1 +-  15.5 | +-   8.2 (20 seeds) | 77/80
+   LA-1           - TD-OPT-Q        -14.8 +-  20.9 | +-  14.7 (20 seeds) | 41/80
+   LA-2           - SP-STATIC      -208.0 +-  11.0 | +-   2.4 (20 seeds) | 80/80
+   LA-2           - TD-OPT-Q        -45.7 +-  16.7 | +-  10.1 (20 seeds) | 47/80
+   LA-3           - SP-STATIC      -235.4 +-  14.1 | +-   4.9 (20 seeds) | 80/80
+   LA-3           - TD-OPT-Q        -73.1 +-  16.5 | +-  12.6 (20 seeds) | 45/80
+   TD-OPT replan  - SP-STATIC      -200.4 +-  19.4 | +-   8.5 (20 seeds) | 80/80
+   TD-OPT replan  - TD-OPT-Q        -38.0 +-  15.6 | +-   5.7 (20 seeds) | 20/80
+   TD-OPT-Q       - SP-STATIC      -162.3 +-  16.5 | +-  10.8 (20 seeds) | 80/80
+
+=== demand 1/100 ===
+   SP-STATIC      n= 80  1243.3 +-   9.7
+   LA-1           n= 80  1096.9 +-  15.3
+   LA-2           n= 80  1128.0 +-  25.3
+   LA-3           n= 80  1107.9 +-  22.3
+   TD-OPT replan  n= 80  1070.7 +-  20.7
+   TD-OPT-Q       n= 80  1085.2 +-  23.5
+   SP-STATIC      - TD-OPT-Q       +158.0 +-  20.4 | +-  15.4 (20 seeds) | 3/80
+   LA-1           - SP-STATIC      -146.4 +-  11.2 | +-  12.8 (20 seeds) | 79/80
+   LA-1           - TD-OPT-Q        +11.6 +-  18.7 | +-  16.5 (20 seeds) | 36/80
+   LA-2           - SP-STATIC      -115.2 +-  19.1 | +-  21.7 (20 seeds) | 60/80
+   LA-2           - TD-OPT-Q        +42.8 +-  20.2 | +-  21.0 (20 seeds) | 23/80
+   LA-3           - SP-STATIC      -135.4 +-  19.1 | +-  16.8 (20 seeds) | 79/80
+   LA-3           - TD-OPT-Q        +22.6 +-  18.7 | +-  21.3 (20 seeds) | 27/80
+   TD-OPT replan  - SP-STATIC      -172.6 +-  18.1 | +-  16.1 (20 seeds) | 78/80
+   TD-OPT replan  - TD-OPT-Q        -14.5 +-  13.3 | +-  16.2 (20 seeds) | 36/80
+   TD-OPT-Q       - SP-STATIC      -158.0 +-  20.4 | +-  15.4 (20 seeds) | 77/80
+
+=== demand 1/50 ===
+   SP-STATIC      n= 80  1264.7 +-   7.4
+   LA-1           n= 80  1113.3 +-  13.2
+   LA-2           n= 80  1202.7 +-  20.9
+   LA-3           n= 80  1178.0 +-  20.8
+   TD-OPT replan  n= 80  1148.0 +-  19.1
+   TD-OPT-Q       n= 80  1145.5 +-  17.6
+   SP-STATIC      - TD-OPT-Q       +119.2 +-  13.9 | +-  16.4 (20 seeds) | 6/80
+   LA-1           - SP-STATIC      -151.4 +-  11.4 | +-  12.7 (20 seeds) | 80/80
+   LA-1           - TD-OPT-Q        -32.1 +-  17.9 | +-  18.9 (20 seeds) | 49/80
+   LA-2           - SP-STATIC       -62.0 +-  14.7 | +-  10.6 (20 seeds) | 44/80
+   LA-2           - TD-OPT-Q        +57.2 +-  15.8 | +-  16.4 (20 seeds) | 15/80
+   LA-3           - SP-STATIC       -86.7 +-  18.4 | +-  16.4 (20 seeds) | 71/80
+   LA-3           - TD-OPT-Q        +32.5 +-  19.6 | +-  20.2 (20 seeds) | 24/80
+   TD-OPT replan  - SP-STATIC      -116.7 +-  17.0 | +-  12.9 (20 seeds) | 74/80
+   TD-OPT replan  - TD-OPT-Q         +2.6 +-  17.8 | +-  19.9 (20 seeds) | 27/80
+   TD-OPT-Q       - SP-STATIC      -119.2 +-  13.9 | +-  16.4 (20 seeds) | 74/80
+
+=== demand 1/25 ===
+   SP-STATIC      n= 80  1264.2 +-   7.4
+   LA-1           n= 80  1123.6 +-  12.0
+   LA-2           n= 80  1215.8 +-  20.0
+   LA-3           n= 80  1254.7 +-  20.2
+   TD-OPT replan  n= 80  1222.0 +-  18.3
+   TD-OPT-Q       n= 80  1159.0 +-  13.7
+   SP-STATIC      - TD-OPT-Q       +105.2 +-  10.1 | +-  13.5 (20 seeds) | 3/80
+   LA-1           - SP-STATIC      -140.6 +-  12.6 | +-  13.8 (20 seeds) | 80/80
+   LA-1           - TD-OPT-Q        -35.4 +-  15.8 | +-  19.3 (20 seeds) | 44/80
+   LA-2           - SP-STATIC       -48.4 +-  13.3 | +-   4.0 (20 seeds) | 38/80
+   LA-2           - TD-OPT-Q        +56.8 +-  15.3 | +-  13.1 (20 seeds) | 7/80
+   LA-3           - SP-STATIC        -9.5 +-  17.9 | +-  15.3 (20 seeds) | 45/80
+   LA-3           - TD-OPT-Q        +95.7 +-  20.9 | +-  23.4 (20 seeds) | 12/80
+   TD-OPT replan  - SP-STATIC       -42.2 +-  16.2 | +-  21.2 (20 seeds) | 68/80
+   TD-OPT replan  - TD-OPT-Q        +63.0 +-  17.8 | +-  21.3 (20 seeds) | 17/80
+   TD-OPT-Q       - SP-STATIC      -105.2 +-  10.1 | +-  13.5 (20 seeds) | 77/80
+
+=== demand 1/15 ===
+   SP-STATIC      n= 80  1273.4 +-   9.0
+   LA-1           n= 80  1164.5 +-  13.7
+   LA-2           n= 80  1233.1 +-  22.0
+   LA-3           n= 80  1316.8 +-  20.3
+   TD-OPT replan  n= 80  1265.8 +-  23.9
+   TD-OPT-Q       n= 80  1149.7 +-  13.1
+   SP-STATIC      - TD-OPT-Q       +123.7 +-  12.2 | +-  10.9 (20 seeds) | 2/80
+   LA-1           - SP-STATIC      -109.0 +-  13.3 | +-  16.8 (20 seeds) | 77/80
+   LA-1           - TD-OPT-Q        +14.7 +-  15.0 | +-  18.0 (20 seeds) | 30/80
+   LA-2           - SP-STATIC       -40.3 +-  16.7 | +-  13.9 (20 seeds) | 41/80
+   LA-2           - TD-OPT-Q        +83.3 +-  19.3 | +-  15.7 (20 seeds) | 9/80
+   LA-3           - SP-STATIC       +43.4 +-  17.0 | +-  17.7 (20 seeds) | 24/80
+   LA-3           - TD-OPT-Q       +167.1 +-  20.0 | +-  18.8 (20 seeds) | 1/80
+   TD-OPT replan  - SP-STATIC        -7.6 +-  21.6 | +-  22.9 (20 seeds) | 43/80
+   TD-OPT replan  - TD-OPT-Q       +116.0 +-  21.4 | +-  18.5 (20 seeds) | 10/80
+   TD-OPT-Q       - SP-STATIC      -123.7 +-  12.2 | +-  10.9 (20 seeds) | 76/80
+
+=== demand 1/10 ===
+   SP-STATIC      n= 80  1298.8 +-  10.7
+   LA-1           n= 80  1223.5 +-  21.6
+   LA-2           n= 80  1274.7 +-  24.0
+   LA-3           n= 80  1325.0 +-  22.1
+   TD-OPT replan  n= 80  1302.0 +-  23.8
+   TD-OPT-Q       n= 80  1175.1 +-  18.4
+   SP-STATIC      - TD-OPT-Q       +123.7 +-  15.2 | +-  16.3 (20 seeds) | 4/80
+   LA-1           - SP-STATIC       -75.3 +-  19.8 | +-  19.1 (20 seeds) | 63/80
+   LA-1           - TD-OPT-Q        +48.4 +-  26.7 | +-  25.6 (20 seeds) | 23/80
+   LA-2           - SP-STATIC       -24.1 +-  20.7 | +-  20.0 (20 seeds) | 44/80
+   LA-2           - TD-OPT-Q        +99.6 +-  24.5 | +-  23.2 (20 seeds) | 7/80
+   LA-3           - SP-STATIC       +26.2 +-  20.7 | +-  20.6 (20 seeds) | 29/80
+   LA-3           - TD-OPT-Q       +149.9 +-  24.0 | +-  21.7 (20 seeds) | 6/80
+   TD-OPT replan  - SP-STATIC        +3.2 +-  24.7 | +-  29.4 (20 seeds) | 34/80
+   TD-OPT replan  - TD-OPT-Q       +126.8 +-  28.0 | +-  32.6 (20 seeds) | 14/80
+   TD-OPT-Q       - SP-STATIC      -123.7 +-  15.2 | +-  16.3 (20 seeds) | 75/80
+wrote figure
