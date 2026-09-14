@@ -12,3 +12,5 @@ __pycache__/
 !grid8.net.xml
 *.osm
 real.net.xml
+cache/
+real_net_candidates.json
