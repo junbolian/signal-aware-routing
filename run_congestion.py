@@ -1,8 +1,12 @@
-"""Congestion experiment on one SUMO build, resumable (cross-platform twin of
-run_congestion.sh). A (scenario, method, seed) cell is skipped when its result
-file exists. Order: the seven core methods at moderate, light and heavy demand
-(usable partial results first), then the moderate-only extras and the
-traffic-aware baselines, then the empty net.
+"""Congestion experiment on one SUMO build, resumable. A (scenario, method,
+seed) cell is skipped when its result file exists. Order: the kernel-free
+methods (STATIC, LA1, MDP, TDOPT_replan, TDOPT-Q) at moderate, light and heavy
+demand, then the moderate-only extras and the traffic-aware baselines, then
+the empty net, and finally STATIC-Q and MDP-Q, which need the cross-fitted
+kernels kernel_<prefix>_fold{A,B}.json of queue_kernel.py. When a kernel file
+is missing the driver prints what to do and skips those cells; run
+`python queue_kernel.py` once the kernel-free methods of both folds have
+finished, then the driver again to fill them.
 
 Usage:  python run_congestion.py            # all seeds 11..20
         python run_congestion.py 11 12 13   # a subset of seeds (run several
@@ -12,7 +16,8 @@ import os, subprocess, sys, time
 HERE = os.path.dirname(os.path.abspath(__file__))
 os.chdir(HERE)
 SEEDS = [int(s) for s in sys.argv[1:]] or list(range(11, 21))
-CORE = ["STATIC", "LA1", "MDP", "TDOPT_replan", "STATIC-Q", "MDP-Q", "TDOPT-Q"]
+CORE = ["STATIC", "LA1", "MDP", "TDOPT_replan", "TDOPT-Q"]
+CORE_K = ["STATIC-Q", "MDP-Q"]          # need the kernels
 EXTRA_MOD = ["GREEDY", "TDOPT_open", "STATIC-TRAFFIC", "STATIC-TRAFFIC-RT"]
 EXTRA_DEM = ["STATIC-TRAFFIC-RT"]
 TAG = {"STATIC-TRAFFIC-RT": "STATICTRAFFICRT", "STATIC-TRAFFIC": "STATICTRAFFIC",
@@ -61,4 +66,25 @@ if SEEDS[0] == 11:      # the empty-net cells once, by the process that owns see
     run(["empty"], "sumo_results/empty.json")
     run(["empty_one", "TDOPT_replan"], "sumo_results/empty_one_TDOPT_replan.json")
     run(["empty_one", "MDP"], "sumo_results/empty_one_MDP.json")
+
+
+def kernel_ok(prefix, s):
+    fold = "A" if s <= 15 else "B"
+    return os.path.exists(f"kernel_{prefix}_fold{fold}.json")
+
+
+skipped = 0
+for prefix, mode, den in (("mod", "mod", None), ("dem25", "dem", 25), ("dem10", "dem", 10)):
+    for s in SEEDS:
+        for m in CORE_K:
+            out = cell(mode, m, s, den)
+            if os.path.exists(out):
+                continue
+            if not kernel_ok(prefix, s):
+                skipped += 1
+                continue
+            run([mode, m, str(s)] + ([str(den)] if den else []), out)
+if skipped:
+    print(f"[{stamp()}] {skipped} STATIC-Q/MDP-Q cells skipped: kernels missing. Run `python queue_kernel.py` "
+          "after the kernel-free methods of both seed folds have finished, then this driver again.", flush=True)
 print(f"[{stamp()}] DONE seeds {SEEDS}", flush=True)

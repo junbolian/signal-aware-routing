@@ -18,7 +18,9 @@ import sumo, sumolib, traci
 import signal_routing as sr
 from lookahead import static_V, la_route
 import queue_model as qm
+import queue_kernel as qk
 qm.load_calibration()
+KERNEL=None   # set per scenario in main (kernel_<prefix>.json)
 
 SH=sumo.SUMO_HOME; SUMO_BIN=os.path.join(SH,"bin","sumo"+(".exe" if os.name=="nt" else ""))
 NETF="grid8.net.xml"
@@ -43,7 +45,7 @@ rng=random.Random(1000)
 ANET=sr.Net(N,rng,C=C,link_lo=TAU0,link_hi=TAU0,offset_mode="random")
 VSTAT=static_V(ANET,TM,DEST)
 def sedge(u,v): return nid(u)+nid(v)
-VMDP0,_,_=qm.solve_values(ANET,TM,DEST,{},sedge)   # Proposition 7 value, no queues
+VMDP0,_=qm.solve_values(ANET,TM,DEST,None,sedge)   # Proposition 7 value, no queues
 VMDP={e:float(v[0]) for e,v in VMDP0.items()}
 def e2l(eid):
     if len(eid)==4 and eid[0] in "ABCDEFGH" and eid[2] in "ABCDEFGH":
@@ -297,8 +299,8 @@ def first_link(method,t0,meas=None,qs=None,pbe=None):
     if method=="MDP":
         return mdp_first_link(VMDP),None
     if method in ("STATICQ","MDPQ"):
-        V,Vf,_=qm.solve_values(ANET,TM,DEST,qs,sedge,static=(method=="STATICQ"))
-        return qm.first_link(ANET,ORIG,V,Vf,pbe,sedge),None
+        V,_=qm.solve_values(ANET,TM,DEST,KERNEL,sedge,static=(method=="STATICQ"))
+        return qm.first_link(ANET,ORIG,V,pbe,sedge),None
     if method=="TDOPTQ":
         return qm.tdoptq_first_link(ANET,TM,ORIG,t0,DEST,qs,pbe,sedge),None
     if method=="STATICTRAFFIC":
@@ -389,8 +391,8 @@ def run_one(method,t0,prob,seed,rfile,timeout,meas=None):
                             else:
                                 qs=est.rates(); pl=platoons(eid,pos,t)
                                 if method in ("STATICQ","MDPQ"):
-                                    VQ,VfQ,_=qm.solve_values(ANET,TM,DEST,qs,sedge,static=(method=="STATICQ"))
-                                    nx=qm.decide(ANET,TM,lk,tp,DEST,VQ,VfQ,pl,off=(off if method=="MDPQ" else None))
+                                    VQ,_=qm.solve_values(ANET,TM,DEST,KERNEL,sedge,static=(method=="STATICQ"))
+                                    nx=qm.decide(ANET,TM,lk,tp,DEST,VQ,pl,KERNEL,off=(off if method=="MDPQ" else None))
                                 else: nx=qm.tdoptq_path(ANET,TM,lk,tp,DEST,qs,pl,sedge)[0][1]
                             if pl is None: pl=platoons(eid,pos,t)
                             m=move_of(lk,nx)
@@ -401,7 +403,7 @@ def run_one(method,t0,prob,seed,rfile,timeout,meas=None):
                                     qmin=min(len(pl.get(l,[])) for l in qm.lanes_for(mm))
                                     if method=="MDP": tv=VMDP[e2]
                                     elif method=="LA1": tv=VSTAT[e2]
-                                    elif method in ("STATICQ","MDPQ"): tv=qm._cont(VQ,VfQ,mm,e2,qmin)
+                                    elif method in ("STATICQ","MDPQ"): tv=float(VQ[e2][min(qmin,qm.QMAX)])
                                     else: tv=float("nan")
                                     opts.append(f"{mm}:head={hp:5.1f} q={[len(pl.get(l,[])) for l in qm.lanes_for(mm)]} tail={tv:7.1f}")
                                 print(f"    t={t:.0f} {eid} phase={(tp-off)%C:5.1f} choose {m} | "+" | ".join(opts),flush=True)

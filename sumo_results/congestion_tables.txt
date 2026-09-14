@@ -5,14 +5,14 @@ A. mean travel time
    LA-1               n= 40   1126.2 +-  17.7
    MDP                n= 40   1139.0 +-  18.2
    TD-OPT replan      n= 40   1235.0 +-  22.6
-   SP-STATIC-Q        n= 40   1285.9 +-  19.4
-   MDP-Q              n= 40   1188.5 +-  28.4
+   SP-STATIC-Q        n= 40   1230.9 +-  23.0
+   MDP-Q              n= 40   1193.2 +-  27.7
    TD-OPT-Q           n= 40   1169.2 +-  20.9
    STATIC-TRAFFIC-RT  n= 40   1264.2 +-  10.4
 B. paired differences a - b (s): per-instance CI | seed-clustered CI | a faster in
    -- queue information, by phase regime
-   SP-STATIC-Q      - SP-STATIC          +21.7 +-  15.7 | +-  26.1 (10 seeds) | 12/40
-   MDP-Q            - MDP                +49.5 +-  24.5 | +-  22.2 (10 seeds) |  9/40
+   SP-STATIC-Q      - SP-STATIC          -33.3 +-  20.7 | +-  22.2 (10 seeds) | 21/40
+   MDP-Q            - MDP                +54.2 +-  25.1 | +-  13.4 (10 seeds) |  7/40
    TD-OPT-Q         - TD-OPT replan      -65.8 +-  21.8 | +-  28.1 (10 seeds) | 32/40
    -- phase information, queue-ignorant
    MDP              - SP-STATIC         -125.3 +-  15.3 | +-  17.7 (10 seeds) | 40/40
@@ -20,18 +20,18 @@ B. paired differences a - b (s): per-instance CI | seed-clustered CI | a faster 
    TD-OPT replan    - SP-STATIC          -29.2 +-  20.5 | +-  32.6 (10 seeds) | 32/40
    TD-OPT replan    - MDP                +96.1 +-  29.0 | +-  45.8 (10 seeds) |  4/40
    -- phase information, queue-aware
-   MDP-Q            - SP-STATIC-Q        -97.4 +-  24.7 | +-  19.9 (10 seeds) | 36/40
-   TD-OPT-Q         - SP-STATIC-Q       -116.7 +-  20.1 | +-  31.6 (10 seeds) | 37/40
-   TD-OPT-Q         - MDP-Q              -19.2 +-  27.3 | +-  33.6 (10 seeds) | 23/40
+   MDP-Q            - SP-STATIC-Q        -37.8 +-  30.1 | +-  23.1 (10 seeds) | 26/40
+   TD-OPT-Q         - SP-STATIC-Q        -61.7 +-  24.8 | +-  30.0 (10 seeds) | 32/40
+   TD-OPT-Q         - MDP-Q              -23.9 +-  27.3 | +-  35.2 (10 seeds) | 22/40
    -- deployable rule against the queue-aware ladder
    LA-1             - MDP                -12.7 +-  16.1 | +-  19.9 (10 seeds) | 17/40
-   LA-1             - SP-STATIC-Q       -159.7 +-  27.9 | +-  43.2 (10 seeds) | 37/40
-   LA-1             - MDP-Q              -62.2 +-  30.2 | +-  31.0 (10 seeds) | 24/40
+   LA-1             - SP-STATIC-Q       -104.7 +-  28.6 | +-  31.1 (10 seeds) | 35/40
+   LA-1             - MDP-Q              -66.9 +-  30.1 | +-  26.9 (10 seeds) | 26/40
    LA-1             - TD-OPT-Q           -43.0 +-  24.6 | +-  34.5 (10 seeds) | 25/40
    -- traffic-aware baselines
    STATIC-TRAFFIC-RT - SP-STATIC           +0.0 +-   0.0 | +-   0.0 (10 seeds) |  0/40
-   SP-STATIC-Q      - STATIC-TRAFFIC-RT   +21.7 +-  15.7 | +-  26.1 (10 seeds) | 12/40
-   MDP-Q            - STATIC-TRAFFIC-RT   -75.8 +-  23.4 | +-  21.8 (10 seeds) | 31/40
+   SP-STATIC-Q      - STATIC-TRAFFIC-RT   -33.3 +-  20.7 | +-  22.2 (10 seeds) | 21/40
+   MDP-Q            - STATIC-TRAFFIC-RT   -71.1 +-  23.3 | +-  19.6 (10 seeds) | 33/40
 C. prediction diagnostic at decided stoplines: planned vs realised delay (s)
    method         mv    n q_ahead  planned realised   error     sd
    LA-1           S   293    0.35     14.0     16.0    +2.0    2.2
@@ -43,12 +43,12 @@ C. prediction diagnostic at decided stoplines: planned vs realised delay (s)
    TD-OPT replan  S   295    0.30     15.2     17.0    +1.8    1.7
    TD-OPT replan  L   112    1.01     21.9     37.9   +16.0   37.7
    TD-OPT replan  R   113    0.94      0.0     24.1   +24.1   23.5
-   SP-STATIC-Q    S   149    0.24     27.1     20.3    -6.9   26.6
-   SP-STATIC-Q    L   169    0.40     46.1     62.2   +16.1   28.8
-   SP-STATIC-Q    R   202    0.30      4.6      6.4    +1.7    8.1
-   MDP-Q          S   254    0.18     18.4     19.5    +1.0    5.1
-   MDP-Q          L   130    0.69     34.5     35.0    +0.6    8.8
-   MDP-Q          R   136    0.65      8.2     11.4    +3.2    3.8
+   SP-STATIC-Q    S    46    0.04     26.7     38.1   +11.4   34.8
+   SP-STATIC-Q    L   228    0.38     45.3     47.7    +2.5   26.4
+   SP-STATIC-Q    R   246    0.15      2.2      2.8    +0.6    5.8
+   MDP-Q          S   221    0.18     19.0     20.4    +1.4    0.6
+   MDP-Q          L   145    0.59     37.0     36.9    -0.1   11.8
+   MDP-Q          R   154    0.69      5.7      9.2    +3.5    3.6
    TD-OPT-Q       S   235    0.22     26.2     27.6    +1.4    0.7
    TD-OPT-Q       L   144    0.29     20.3     20.8    +0.5    9.8
    TD-OPT-Q       R   141    0.29      4.8      6.8    +2.0    2.4
@@ -61,15 +61,15 @@ A. mean travel time
    MDP                n= 40   1169.6 +-  16.1
    TD-OPT open        n= 40   1303.4 +-  36.5
    TD-OPT replan      n= 40   1279.4 +-  35.3
-   SP-STATIC-Q        n= 40   1301.2 +-  23.8
-   MDP-Q              n= 40   1224.4 +-  30.6
+   SP-STATIC-Q        n= 40   1246.1 +-  19.6
+   MDP-Q              n= 40   1242.5 +-  26.9
    TD-OPT-Q           n= 40   1159.8 +-  21.0
    STATIC-TRAFFIC     n= 40   1356.0 +-  19.1
    STATIC-TRAFFIC-RT  n= 40   1269.2 +-  10.5
 B. paired differences a - b (s): per-instance CI | seed-clustered CI | a faster in
    -- queue information, by phase regime
-   SP-STATIC-Q      - SP-STATIC          +32.0 +-  23.2 | +-  29.3 (10 seeds) | 16/40
-   MDP-Q            - MDP                +54.8 +-  28.4 | +-  25.9 (10 seeds) | 13/40
+   SP-STATIC-Q      - SP-STATIC          -23.1 +-  17.4 | +-  18.8 (10 seeds) | 18/40
+   MDP-Q            - MDP                +72.9 +-  26.5 | +-  24.1 (10 seeds) |  7/40
    TD-OPT-Q         - TD-OPT replan     -119.6 +-  32.9 | +-  28.6 (10 seeds) | 34/40
    -- phase information, queue-ignorant
    MDP              - SP-STATIC          -99.6 +-  12.8 | +-  12.8 (10 seeds) | 39/40
@@ -77,19 +77,19 @@ B. paired differences a - b (s): per-instance CI | seed-clustered CI | a faster 
    TD-OPT replan    - SP-STATIC          +10.2 +-  32.9 | +-  29.4 (10 seeds) | 16/40
    TD-OPT replan    - MDP               +109.8 +-  36.5 | +-  33.6 (10 seeds) |  8/40
    -- phase information, queue-aware
-   MDP-Q            - SP-STATIC-Q        -76.8 +-  32.2 | +-  34.0 (10 seeds) | 28/40
-   TD-OPT-Q         - SP-STATIC-Q       -141.4 +-  28.6 | +-  34.4 (10 seeds) | 37/40
-   TD-OPT-Q         - MDP-Q              -64.6 +-  30.8 | +-  25.4 (10 seeds) | 28/40
+   MDP-Q            - SP-STATIC-Q         -3.6 +-  23.5 | +-  21.9 (10 seeds) | 16/40
+   TD-OPT-Q         - SP-STATIC-Q        -86.3 +-  20.3 | +-  19.0 (10 seeds) | 34/40
+   TD-OPT-Q         - MDP-Q              -82.7 +-  29.3 | +-  26.9 (10 seeds) | 29/40
    -- deployable rule against the queue-aware ladder
    LA-1             - MDP                 +2.2 +-  19.5 | +-  23.9 (10 seeds) | 20/40
-   LA-1             - SP-STATIC-Q       -129.4 +-  22.1 | +-  21.2 (10 seeds) | 38/40
-   LA-1             - MDP-Q              -52.6 +-  28.5 | +-  23.3 (10 seeds) | 22/40
+   LA-1             - SP-STATIC-Q        -74.3 +-  21.7 | +-  28.4 (10 seeds) | 34/40
+   LA-1             - MDP-Q              -70.7 +-  27.2 | +-  25.0 (10 seeds) | 28/40
    LA-1             - TD-OPT-Q           +12.0 +-  20.8 | +-  25.3 (10 seeds) | 18/40
    -- traffic-aware baselines
    STATIC-TRAFFIC-RT - SP-STATIC           +0.0 +-   0.0 | +-   0.0 (10 seeds) |  0/40
    STATIC-TRAFFIC   - SP-STATIC          +86.8 +-  19.7 | +-  30.3 (10 seeds) |  0/40
-   SP-STATIC-Q      - STATIC-TRAFFIC-RT   +32.0 +-  23.2 | +-  29.3 (10 seeds) | 16/40
-   MDP-Q            - STATIC-TRAFFIC-RT   -44.8 +-  28.6 | +-  25.2 (10 seeds) | 24/40
+   SP-STATIC-Q      - STATIC-TRAFFIC-RT   -23.1 +-  17.4 | +-  18.8 (10 seeds) | 18/40
+   MDP-Q            - STATIC-TRAFFIC-RT   -26.7 +-  25.0 | +-  21.9 (10 seeds) | 21/40
    -- moderate-only references
    GREEDY           - SP-STATIC          +66.8 +-  22.0 | +-  17.4 (10 seeds) |  5/40
    TD-OPT replan    - TD-OPT open        -24.0 +-  38.3 | +-  19.4 (10 seeds) | 19/40
@@ -108,12 +108,12 @@ C. prediction diagnostic at decided stoplines: planned vs realised delay (s)
    TD-OPT replan  S   285    0.94     17.0     19.9    +3.0    3.1
    TD-OPT replan  L   113    1.53     15.8     39.2   +23.4   44.1
    TD-OPT replan  R   122    1.51      0.0     22.9   +22.9   24.6
-   SP-STATIC-Q    S   195    0.55     27.8     24.3    -3.5   28.2
-   SP-STATIC-Q    L   145    0.50     46.0     62.1   +16.1   31.9
-   SP-STATIC-Q    R   180    0.68      8.8      8.3    -0.5   12.5
-   MDP-Q          S   297    0.44     22.8     24.2    +1.4    0.7
-   MDP-Q          L    97    1.12     30.8     31.0    +0.2   12.0
-   MDP-Q          R   126    1.24     11.4     16.0    +4.6    6.7
+   SP-STATIC-Q    S    47    0.06     26.8     34.7    +7.9   33.5
+   SP-STATIC-Q    L   223    0.67     46.6     50.3    +3.7   29.6
+   SP-STATIC-Q    R   250    0.30      4.2      3.3    -0.9   10.1
+   MDP-Q          S   249    0.41     22.6     24.2    +1.5    0.7
+   MDP-Q          L   125    1.20     37.6     37.3    -0.2   12.7
+   MDP-Q          R   146    1.05      8.6     14.1    +5.4    9.2
    TD-OPT-Q       S   198    0.42     24.6     26.1    +1.5    0.8
    TD-OPT-Q       L   167    0.32     21.4     22.9    +1.4    0.4
    TD-OPT-Q       R   155    0.43      3.5      5.0    +1.5    1.1
@@ -124,14 +124,14 @@ A. mean travel time
    LA-1               n= 40   1224.7 +-  32.3
    MDP                n= 40   1225.5 +-  30.2
    TD-OPT replan      n= 40   1310.6 +-  35.2
-   SP-STATIC-Q        n= 40   1359.5 +-  20.9
-   MDP-Q              n= 40   1273.7 +-  32.4
+   SP-STATIC-Q        n= 40   1288.3 +-  22.6
+   MDP-Q              n= 40   1243.8 +-  25.7
    TD-OPT-Q           n= 40   1194.5 +-  30.7
    STATIC-TRAFFIC-RT  n= 40   1304.2 +-  17.2
 B. paired differences a - b (s): per-instance CI | seed-clustered CI | a faster in
    -- queue information, by phase regime
-   SP-STATIC-Q      - SP-STATIC          +55.2 +-  22.7 | +-  27.2 (10 seeds) |  5/40
-   MDP-Q            - MDP                +48.1 +-  32.3 | +-  22.8 (10 seeds) | 15/40
+   SP-STATIC-Q      - SP-STATIC          -15.9 +-  18.5 | +-  17.2 (10 seeds) | 17/40
+   MDP-Q            - MDP                +18.2 +-  28.6 | +-  25.3 (10 seeds) | 16/40
    TD-OPT-Q         - TD-OPT replan     -116.1 +-  43.2 | +-  51.0 (10 seeds) | 32/40
    -- phase information, queue-ignorant
    MDP              - SP-STATIC          -78.7 +-  28.0 | +-  27.7 (10 seeds) | 35/40
@@ -139,18 +139,18 @@ B. paired differences a - b (s): per-instance CI | seed-clustered CI | a faster 
    TD-OPT replan    - SP-STATIC           +6.3 +-  36.2 | +-  47.2 (10 seeds) | 17/40
    TD-OPT replan    - MDP                +85.0 +-  43.1 | +-  45.2 (10 seeds) | 10/40
    -- phase information, queue-aware
-   MDP-Q            - SP-STATIC-Q        -85.8 +-  36.7 | +-  42.0 (10 seeds) | 28/40
-   TD-OPT-Q         - SP-STATIC-Q       -165.0 +-  31.9 | +-  32.4 (10 seeds) | 37/40
-   TD-OPT-Q         - MDP-Q              -79.2 +-  38.6 | +-  40.5 (10 seeds) | 28/40
+   MDP-Q            - SP-STATIC-Q        -44.5 +-  27.0 | +-  20.1 (10 seeds) | 21/40
+   TD-OPT-Q         - SP-STATIC-Q        -93.8 +-  32.4 | +-  26.2 (10 seeds) | 33/40
+   TD-OPT-Q         - MDP-Q              -49.3 +-  33.7 | +-  29.9 (10 seeds) | 27/40
    -- deployable rule against the queue-aware ladder
    LA-1             - MDP                 -0.8 +-  23.9 | +-  20.0 (10 seeds) | 20/40
-   LA-1             - SP-STATIC-Q       -134.8 +-  33.5 | +-  33.6 (10 seeds) | 36/40
-   LA-1             - MDP-Q              -49.0 +-  39.9 | +-  23.2 (10 seeds) | 24/40
+   LA-1             - SP-STATIC-Q        -63.6 +-  33.4 | +-  37.1 (10 seeds) | 29/40
+   LA-1             - MDP-Q              -19.1 +-  34.9 | +-  28.2 (10 seeds) | 21/40
    LA-1             - TD-OPT-Q           +30.2 +-  45.0 | +-  42.8 (10 seeds) | 15/40
    -- traffic-aware baselines
    STATIC-TRAFFIC-RT - SP-STATIC           +0.0 +-   0.0 | +-   0.0 (10 seeds) |  0/40
-   SP-STATIC-Q      - STATIC-TRAFFIC-RT   +55.2 +-  22.7 | +-  27.2 (10 seeds) |  5/40
-   MDP-Q            - STATIC-TRAFFIC-RT   -30.6 +-  30.4 | +-  22.0 (10 seeds) | 24/40
+   SP-STATIC-Q      - STATIC-TRAFFIC-RT   -15.9 +-  18.5 | +-  17.2 (10 seeds) | 17/40
+   MDP-Q            - STATIC-TRAFFIC-RT   -60.5 +-  22.2 | +-  16.9 (10 seeds) | 27/40
 C. prediction diagnostic at decided stoplines: planned vs realised delay (s)
    method         mv    n q_ahead  planned realised   error     sd
    LA-1           S   307    1.16     15.3     17.9    +2.6    7.5
@@ -162,12 +162,12 @@ C. prediction diagnostic at decided stoplines: planned vs realised delay (s)
    TD-OPT replan  S   280    1.59     15.6     19.1    +3.5    6.2
    TD-OPT replan  L   112    1.59     14.6     44.9   +30.3   48.3
    TD-OPT replan  R   128    1.90      0.0     19.2   +19.2   23.0
-   SP-STATIC-Q    S   219    0.94     28.6     25.6    -3.0   27.3
-   SP-STATIC-Q    L   132    0.87     48.1     63.7   +15.6   30.7
-   SP-STATIC-Q    R   169    1.33     16.9     11.0    -5.9   17.7
-   MDP-Q          S   316    0.32     28.1     29.3    +1.2    4.6
-   MDP-Q          L    92    0.97     24.8     26.0    +1.2    0.4
-   MDP-Q          R   112    1.54     12.1     16.1    +4.0    6.7
+   SP-STATIC-Q    S    33    0.55     28.1     33.3    +5.2   33.5
+   SP-STATIC-Q    L   228    1.09     49.4     51.3    +1.9   28.1
+   SP-STATIC-Q    R   259    0.76      9.6      4.9    -4.7   14.5
+   MDP-Q          S   260    0.47     22.5     24.0    +1.4    0.6
+   MDP-Q          L   117    1.08     31.3     30.0    -1.3   16.0
+   MDP-Q          R   143    1.37      9.8     15.1    +5.3    7.9
    TD-OPT-Q       S   219    0.76     15.1     16.7    +1.6    1.0
    TD-OPT-Q       L   153    0.84     28.7     30.2    +1.4    0.4
    TD-OPT-Q       R   148    0.80      4.7      6.7    +1.9    2.3

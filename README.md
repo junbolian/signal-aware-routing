@@ -53,6 +53,7 @@ mdp_policy.py          Unknown-offset MDP: value iteration, threshold policy,
                        simulation validation (Prop 6).
 sumo_runner.py         SUMO microscopic experiments (empty and congested).
 queue_model.py         Queue-aware planners (STATIC-Q, MDP-Q, TDOPT-Q) and the MDP in SUMO.
+queue_kernel.py        Empirical transition kernel of the count ahead (cross-fitted folds).
 calibrate_discharge.py Discharge-law calibration from background traffic.
 run_congestion.sh      Full congestion sweep on one build (resumable).
 sumo_aggregate.py      Paired statistics and tables from SUMO outputs (original).
@@ -155,8 +156,13 @@ LS = -0.5 s), `run_congestion.sh` (the full sweep, resumable),
 pip install eclipse-sumo==1.27.1 sumolib==1.27.1 traci==1.27.1 numpy
 python3 calibrate_discharge.py 15,10 11,12 900     # optional: re-fit HS and LS
 ./run_congestion.sh                                 # ~4 h on one core, resumable
+python3 queue_kernel.py                             # transition kernels from the queue-ignorant diagnostics (cross-fitted folds)
+python3 run_congestion.py                           # fills the MDP-Q and STATIC-Q cells, which need the kernels
 python3 sumo_aggregate_q.py                         # prints tables, writes sumo_results/congestion_summary.json
 ```
+The driver runs the queue-ignorant methods first; MDP-Q and STATIC-Q require
+`kernel_<prefix>_fold{A,B}.json`, so run `queue_kernel.py` once the diagnostics
+of LA1, MDP, TDOPT_replan and GREEDY exist for both seed folds, then the driver again.
 
 Multi-vehicle SUMO runs are not reproducible across builds, so every method
 of the congestion tables must come from the same sweep; `sumo_results/` holds

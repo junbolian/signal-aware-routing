@@ -47,3 +47,35 @@ Build note
 - The uploaded repo copy's mdp_policy.py builds the MDP over all non-U-turn
   movements, not the L1-monotone set of Proposition 7; queue_model.solve_values
   uses the monotone set. Check which version is on GitHub.
+
+
+# Revision 2 (after the Task 0 sweep): downstream queue model of MDP-Q and STATIC-Q
+
+Finding from the sweep and from the per-crossing diagnostics: the head model
+(observed platoon, discharge law) predicts the ego's own crossing delay within
+1 to 3 s for MDP-Q and TD-OPT-Q, but the downstream forecast used by the
+unknown-offset planners was wrong. The fluid model prices the queue at every
+later crossing as the stationary standing queue at a uniform arrival phase; a
+platoon-persistence model (the count ahead stays fixed on straight moves and is
+resampled from the cross-axis release at turns) was also tried. The empirical
+transitions of the count ahead, tabulated from the diagnostics of the
+queue-ignorant planners, match neither: after a straight move the count ahead
+persists only partially (from 0 it stays 0 in about two thirds of the cases and
+becomes 1 to 3 otherwise), and after a turn it is mostly 0 unless the turn was
+made during the cross-axis through green.
+
+Change: queue_kernel.py estimates the transition kernel P(q' | q, move, phase
+bin) from the per-crossing records of the queue-ignorant rolling planners (LA1,
+MDP, TDOPT_replan, GREEDY) of the same demand level, the equivalent of a fleet's
+probe history, cross-fitted over two seed folds so that no trip uses statistics
+of its own background realisation. queue_model.solve_values now takes this
+kernel: V(e,q) = E_xi[min_m( W_m(xi,q) + c + sum_q' K_m(q'|q, bin(P)) V(e',q') )]
+for MDP-Q, the marginal kernel and min outside the expectation for STATIC-Q;
+kernel=None reproduces the paper's values on q = 0. TD-OPT-Q is unchanged (full
+timing makes the arrival phase of every crossing known, so its fluid forecast at
+that phase is a deterministic forecast and its diagnostic error is 1 to 2 s).
+sumo_runner.py loads kernel_<prefix>_fold<A|B>.json by seed.
+
+Container pilot (seeds 11 to 13, moderate, this build, diagnostic only):
+STATIC-Q with the kernel 1188 / 1265 / 1216 s against SP-STATIC 1280 / 1265 /
+1265 s; MDP-Q 1207 / 1203 / 1281 s against MDP 1189 / 1174 / 1202 s.

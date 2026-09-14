@@ -236,14 +236,27 @@ def platoon_wait_vec(xi, ax, m, tm, q):
 
 # ------------------------------------------------------- queue-aware values
 
-def solve_values(net, tm, dest, rates, sedge, static=False, tol=1e-4, max_sweeps=300):
-    """Value iteration over the states (e, q), q = 0..QMAX, and (e, f).
-    static=False: V(e,q) = E_xi[min_m(...)], the local-information optimum
-    (MDP-Q); static=True: V(e,q) = min_m E_xi[...], the phase-blind value
-    (STATIC-Q). S keeps q; a turn leads to the fluid state f of the next link;
-    from f, S leads to (e', round(fluid queue at the arrival phase)) and turns
-    to f again. L1-monotone action set. rates = {} reproduces the paper's
-    values (with q = 0 states) exactly. Returns (V, Vf, sweeps)."""
+import queue_kernel as qk
+
+
+def _phase_bins(P, ax, tm):
+    """Bin of the local passage phase P (array) relative to the cross-axis
+    through window: 0 during it, 1 within 40 s after its end, 2 later."""
+    cax = "EW" if ax == "NS" else "NS"
+    s, g = tm._window(cax, "S")
+    since = np.mod(P - s, tm.C)
+    return np.where(since < g, 0, np.where(since < g + 40.0, 1, 2))
+
+
+def solve_values(net, tm, dest, kernel, sedge, static=False, tol=1e-4, max_sweeps=300):
+    """Value iteration over the states (e, q), q = 0..QMAX: the ego rides link
+    e with q vehicles ahead in its lane. The head wait at the next stopline is
+    the platoon wait W_m(xi, q); the count ahead after the crossing follows the
+    empirical kernel P(q' | q, m, phase bin) (queue_kernel.py), the marginal
+    kernel when static=True. static=False: V(e,q) = E_xi[min_m(...)], the
+    local-information optimum (MDP-Q); static=True: V(e,q) = min_m E_xi[...]
+    (STATIC-Q). L1-monotone action set. kernel=None reproduces the paper's
+    values on q = 0 exactly (no vehicles ahead anywhere). Returns (V, sweeps)."""
     XI = np.arange(0.0, tm.C, DXI_MDP) + DXI_MDP / 2
     links = []
     for x in range(net.N):
@@ -253,78 +266,79 @@ def solve_values(net, tm, dest, rates, sedge, static=False, tol=1e-4, max_sweeps
                 links.append((u, v))
     order = sorted(links, key=lambda e: net.dist(e[1], dest))
     Q = np.arange(QMAX + 1)
-    # per (link, move): platoon waits (QMAX+1 x |XI|), fluid waits (|XI|), fluid queue index (|XI|)
-    PW, FW, FQ = {}, {}, {}
+    QB = np.minimum(Q, qk.QB_MAX)
+    PW, BIN = {}, {}
     for e in links:
         if e[1] == dest:
             continue
-        u, v = e
-        eid = sedge(u, v)
         for m, e2, ax in monotone_moves(net, e, dest):
             PW[(e, m)] = np.stack([platoon_wait_vec(XI, ax, m, tm, q) for q in Q])
-            lams = rates_of(rates, eid, m)
-            fw = np.stack([fluid_wait_vec(XI, ax, m, tm, lam) for lam in lams])
-            j = np.argmin(fw, axis=0)
-            FW[(e, m)] = fw[j, np.arange(len(XI))]
-            fq = np.stack([fluid_q_vec(XI, ax, lam, tm) for lam in lams])[j, np.arange(len(XI))]
-            FQ[(e, m)] = np.minimum(np.rint(fq).astype(int), QMAX)
+            BIN[(e, m)] = _phase_bins(XI[None, :] + PW[(e, m)], ax, tm)     # (Q+1, XI)
     V = {e: np.zeros(QMAX + 1) for e in links}
-    Vf = {e: 0.0 for e in links}
     for sweep in range(1, max_sweeps + 1):
         delta = 0.0
         for e in order:
             if e[1] == dest:
                 continue
-            bq, bf = None, None
+            best = None
             for m, e2, ax in monotone_moves(net, e, dest):
                 c = net.t_cross + net.link_t(*e2)
-                if m == "S":
-                    cq = PW[(e, m)] + c + V[e2][:, None]          # (Q+1, XI)
-                    cf = FW[(e, m)] + c + V[e2][FQ[(e, m)]]        # (XI,)
+                if kernel is None:
+                    cont = np.broadcast_to(V[e2][:, None], (QMAX + 1, len(XI))) if m == "S" \
+                        else np.full((QMAX + 1, len(XI)), V[e2][0])
                 else:
-                    cq = PW[(e, m)] + c + Vf[e2]
-                    cf = FW[(e, m)] + c + Vf[e2]
+                    Vk = V[e2][:qk.QK + 1]
+                    if static:
+                        M = kernel.Km[kernel.MV[m]] @ Vk                    # (QB+1,)
+                        cont = M[QB][:, None] + np.zeros((1, len(XI)))
+                    else:
+                        M = kernel.K[kernel.MV[m]] @ Vk                     # (NBIN, QB+1)
+                        cont = M[BIN[(e, m)], QB[:, None]]
+                cq = PW[(e, m)] + c + cont
                 if static:
-                    cq = np.full_like(cq, 0.0) + cq.mean(axis=1, keepdims=True)
-                    cf = np.full_like(cf, cf.mean())
-                bq = cq if bq is None else np.minimum(bq, cq)
-                bf = cf if bf is None else np.minimum(bf, cf)
-            if bq is None:                  # no distance-reducing move: never entered
+                    cq = np.zeros_like(cq) + cq.mean(axis=1, keepdims=True)
+                best = cq if best is None else np.minimum(best, cq)
+            if best is None:
                 V[e] = np.full(QMAX + 1, 1e9)
-                Vf[e] = 1e9
                 continue
-            nq = bq.mean(axis=1)
-            nf = float(bf.mean())
-            delta = max(delta, float(np.abs(nq - V[e]).max()), abs(nf - Vf[e]))
+            nq = best.mean(axis=1)
+            delta = max(delta, float(np.abs(nq - V[e]).max()))
             V[e] = nq
-            Vf[e] = nf
         if delta < tol:
             break
-    return V, Vf, sweep
+    return V, sweep
 
 
-def _cont(V, Vf, m, e2, q):
-    return V[e2][min(q, QMAX)] if m == "S" else Vf[e2]
+def _cont_obs(m, q, P_local, ax, tm, kernel, Vnext, static):
+    if kernel is None:
+        return Vnext[min(q, QMAX)] if m == "S" else Vnext[0]
+    pb = None if static else int(_phase_bins(np.array([P_local]), ax, tm)[0])
+    return float(kernel.row(m, q, pb) @ Vnext[:qk.QK + 1])
 
 
-def decide(net, tm, e, t, dest, V, Vf, platoons, off=None):
+def decide(net, tm, e, t, dest, V, platoons, kernel, off=None):
     """Decision at the stopline of link e with observed platoons. off given:
-    true local phase observed (MDP-Q); off None: unknown offset, head priced
-    by its expectation (STATIC-Q). Returns the next link."""
+    true local phase observed (MDP-Q); off None: unknown offset, the head
+    averaged over a uniform offset and the marginal kernel (STATIC-Q)."""
+    C = tm.C
+    static = off is None
+    offs = [off] if off is not None else [(i + 0.5) * DXI for i in range(int(round(C / DXI)))]
     best = (float("inf"), None)
     for m, e2, ax in monotone_moves(net, e, dest):
         c = net.t_cross + net.link_t(*e2)
         for l in lanes_for(m):
             arr = platoons.get(l, [])
-            head = (lane_pass(t, off, ax, m, tm, arr) - t) if off is not None \
-                else head_ewait_lane(t, ax, m, tm, arr)
-            val = t + head + c + _cont(V, Vf, m, e2, len(arr))
+            tot = 0.0
+            for o in offs:
+                P = lane_pass(t, o, ax, m, tm, arr)
+                tot += P + c + _cont_obs(m, len(arr), (P - o) % C, ax, tm, kernel, V[e2], static)
+            val = tot / len(offs)
             if val < best[0] - 1e-9:
                 best = (val, e2)
     return best[1]
 
 
-def first_link(net, orig, V, Vf, platoons_by_edge, sedge):
+def first_link(net, orig, V, platoons_by_edge, sedge):
     """Departure decision: the ego enters link (orig, w) at its start and sees
     the vehicles ahead on it; value = link time + V((orig,w), q_ahead)."""
     best = (float("inf"), None)
