@@ -99,3 +99,19 @@ for MDP-Q the optimism is concentrated in decisions that continue straight with
 nobody ahead (q = 0, +131 s, n = 42) against +26 s (n = 12) when q >= 1: the
 count ahead in the ego's lane is not a sufficient statistic of the queue
 process, and the head-of-platoon state is overvalued.
+
+
+# Revision 4: network and results directory as parameters; channelized-lane ablation
+
+- sumo_runner.py, run_congestion.py, queue_kernel.py, calibrate_discharge.py read
+  the network from SR_NET and the results directory from SR_RESULTS (defaults
+  grid8.net.xml and sumo_results); kernels and the discharge calibration live in
+  the results directory of the network they belong to. The lane-movement map is
+  read from the net's connections (qm.set_lanes) instead of being hard-coded.
+  Decisions on the base grid are unchanged (STATIC seed 11 still 1308/1225/1309/1279).
+- run_congestion.py flags: --moderate-only (skip light and heavy), --core-only
+  (skip the moderate extras and the empty net).
+- make_channelized_net.py builds grid8_rt.net.xml (four lanes: R | S | S | L) and
+  verifies the pattern on all 288 edges. Container smoke test on it, seed 11
+  moderate (diagnostic only): SP-STATIC 1203 s, LA-1 1082 s, TD-OPT-Q 1046 s;
+  discharge law HS 2.385 s, LS -0.594 s.

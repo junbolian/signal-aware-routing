@@ -15,7 +15,10 @@ import os, subprocess, sys, time
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 os.chdir(HERE)
-SEEDS = [int(s) for s in sys.argv[1:]] or list(range(11, 21))
+RES = os.environ.get("SR_RESULTS", "sumo_results")   # with SR_NET, selects the network variant
+args = [a for a in sys.argv[1:] if not a.startswith("--")]
+ONLY = {a[2:] for a in sys.argv[1:] if a.startswith("--")}   # e.g. --moderate-only restricts the sweep
+SEEDS = [int(s) for s in args] or list(range(11, 21))
 CORE = ["STATIC", "LA1", "MDP", "TDOPT_replan", "TDOPT-Q"]
 CORE_K = ["STATIC-Q", "MDP-Q"]          # need the kernels
 EXTRA_MOD = ["GREEDY", "TDOPT_open", "STATIC-TRAFFIC", "STATIC-TRAFFIC-RT"]
@@ -44,37 +47,40 @@ def run(args, outfile):
 
 def cell(mode, m, s, den=None):
     t = TAG.get(m, m)
-    return f"sumo_results/mod_{t}_{s}.json" if mode == "mod" else f"sumo_results/dem{den}_{t}_{s}.json"
+    return f"{RES}/mod_{t}_{s}.json" if mode == "mod" else f"{RES}/dem{den}_{t}_{s}.json"
 
 
-os.makedirs("sumo_results", exist_ok=True)
+os.makedirs(RES, exist_ok=True)
 for s in SEEDS:
     for m in CORE:
         run(["mod", m, str(s)], cell("mod", m, s))
-for den in (25, 10):
+LEVELS = () if "moderate-only" in ONLY else (25, 10)
+for den in LEVELS:
     for s in SEEDS:
         for m in CORE:
             run(["dem", m, str(s), str(den)], cell("dem", m, s, den))
 for s in SEEDS:
     for m in EXTRA_MOD:
+        if "core-only" in ONLY: break
         run(["mod", m, str(s)], cell("mod", m, s))
-for den in (25, 10):
+for den in LEVELS:
     for s in SEEDS:
         for m in EXTRA_DEM:
+            if "core-only" in ONLY: break
             run(["dem", m, str(s), str(den)], cell("dem", m, s, den))
-if SEEDS[0] == 11:      # the empty-net cells once, by the process that owns seed 11
-    run(["empty"], "sumo_results/empty.json")
-    run(["empty_one", "TDOPT_replan"], "sumo_results/empty_one_TDOPT_replan.json")
-    run(["empty_one", "MDP"], "sumo_results/empty_one_MDP.json")
+if SEEDS[0] == 11 and "core-only" not in ONLY:      # the empty-net cells once, by the process that owns seed 11
+    run(["empty"], f"{RES}/empty.json")
+    run(["empty_one", "TDOPT_replan"], f"{RES}/empty_one_TDOPT_replan.json")
+    run(["empty_one", "MDP"], f"{RES}/empty_one_MDP.json")
 
 
 def kernel_ok(prefix, s):
     fold = "A" if s <= 15 else "B"
-    return os.path.exists(f"kernel_{prefix}_fold{fold}.json")
+    return os.path.exists(f"{RES}/kernel_{prefix}_fold{fold}.json")
 
 
 skipped = 0
-for prefix, mode, den in (("mod", "mod", None), ("dem25", "dem", 25), ("dem10", "dem", 10)):
+for prefix, mode, den in [("mod", "mod", None)] + [(f"dem{x}", "dem", x) for x in LEVELS]:
     for s in SEEDS:
         for m in CORE_K:
             out = cell(mode, m, s, den)

@@ -22,7 +22,7 @@ Cross-fitting: the kernel used for a seed is estimated from the other fold of
 seeds (seeds 11-15 plan with the kernel estimated on seeds 16-20 and vice
 versa), so a planner never uses statistics of its own background realisation.
 
-Usage: python3 queue_kernel.py [results_dir]   writes kernel_<prefix>_foldA.json
+Usage: python3 queue_kernel.py [results_dir]   writes <results_dir>/kernel_<prefix>_foldA.json
        (estimated on seeds 16-20, used by seeds 11-15) and kernel_<prefix>_foldB.json
        (estimated on seeds 11-15, used by seeds 16-20) for every prefix (mod,
        dem25, dem10) with diagnostics present."""
@@ -110,9 +110,10 @@ class Kernel:
         return self.Km[self.MV[m], q] if pb is None else self.K[self.MV[m], pb, q]
 
 
-def load(prefix, seed=None, path=None):
-    """Kernel for planning trips of `seed`: the fold estimated on the other seeds."""
-    path = path or (f"kernel_{prefix}_fold{fold_of(seed)}.json" if seed is not None else f"kernel_{prefix}.json")
+def load(prefix, seed=None, path=None, res="sumo_results"):
+    """Kernel for planning trips of `seed`: the fold estimated on the other
+    seeds, read from the results directory of the network being run."""
+    path = path or os.path.join(res, f"kernel_{prefix}_fold{fold_of(seed)}.json" if seed is not None else f"kernel_{prefix}.json")
     kern = Kernel(json.load(open(path)))
     if kern.n < 200:
         raise RuntimeError(f"{path}: only {kern.n} transitions; run the queue-ignorant methods of the other fold first, then python3 queue_kernel.py")
@@ -122,13 +123,13 @@ def load(prefix, seed=None, path=None):
 if __name__ == "__main__":
     import sumo_runner as R
     import signal_routing as sr
-    res = sys.argv[1] if len(sys.argv) > 1 else "sumo_results"
+    res = sys.argv[1] if len(sys.argv) > 1 else os.environ.get("SR_RESULTS", "sumo_results")
     for prefix in ("mod", "dem25", "dem10"):
         if not glob.glob(os.path.join(res, f"diag_{prefix}_*.json")):
             continue
         for fold, (est, plan) in FOLDS.items():
             d = estimate(res, prefix, R.e2l, R.ANET.offset, sr.axis_of, R.TM._window, R.C, seeds=set(est))
-            json.dump(d, open(f"kernel_{prefix}_fold{fold}.json", "w"))
+            json.dump(d, open(os.path.join(res, f"kernel_{prefix}_fold{fold}.json"), "w"))
             print(f"{prefix} fold {fold} (estimated on seeds {list(est)}, used by {list(plan)}): {d['n_transitions']} transitions; "
                   "mean q' by move and phase bin (cross green, <40 s after, later):")
             for mv, name in enumerate("SLR"):

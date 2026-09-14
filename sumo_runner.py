@@ -19,11 +19,11 @@ import signal_routing as sr
 from lookahead import static_V, la_route
 import queue_model as qm
 import queue_kernel as qk
-qm.load_calibration()
-KERNEL=None   # set per scenario in main (kernel_<prefix>.json)
+KERNEL=None   # set per scenario in main (kernel_<prefix>_fold<A|B>.json in RESDIR)
 
 SH=sumo.SUMO_HOME; SUMO_BIN=os.path.join(SH,"bin","sumo"+(".exe" if os.name=="nt" else ""))
-NETF="grid8.net.xml"
+NETF=os.environ.get("SR_NET","grid8.net.xml")          # SR_NET selects the network (grid8_rt.net.xml = channelized variant)
+RESDIR=os.environ.get("SR_RESULTS","sumo_results")   # SR_RESULTS selects the results directory (one per network and build)
 C,GS,GL=120.0,40.0,20.0
 TM=sr.Timing(C=C,gs=GS,gl=GL,straight_first=True,rtor=True)
 N=8; ORIG,DEST=(7,0),(0,7); V_FREE=8.33
@@ -35,7 +35,7 @@ QMETH=("STATICQ","MDPQ","TDOPTQ")
 ROLLING=("GREEDY","LA1","MDP","TDOPT_replan")+QMETH
 RT_VMIN=2.0
 LASTRUN={}
-os.makedirs("sumo_results",exist_ok=True)
+os.makedirs(RESDIR,exist_ok=True)
 
 def nid(p): return f"{chr(65+p[0])}{p[1]}"
 net=sumolib.net.readNet(NETF)
@@ -191,6 +191,21 @@ class MeasNet:
 
 APPROACH_LANES=[(e.getID(),l.getIndex(),l.getID()) for e in net.getEdges()
                 if e2l(e.getID()) for l in e.getLanes()]
+def lane_map():
+    """Lane indices admitting each movement, read from the net's connections;
+    must be the same on every approach edge of the grid (the real network of
+    Task 2 needs a per-edge map instead)."""
+    maps=set()
+    for e in net.getEdges():
+        if not e2l(e.getID()): continue
+        d={}
+        for out,conns in e.getOutgoing().items():
+            for c in conns: d.setdefault(c.getDirection(),set()).add(c.getFromLane().getIndex())
+        maps.add(tuple(sorted((k,tuple(sorted(v))) for k,v in d.items() if k in "rsl")))
+    assert len(maps)==1, f"non-uniform lane-movement map across edges: {maps}"
+    m=dict(next(iter(maps))); return {"R":m["r"],"S":m["s"],"L":m["l"]}
+qm.set_lanes(lane_map())
+qm.load_calibration(os.path.join(RESDIR,"discharge_calibration.json") if os.path.exists(os.path.join(RESDIR,"discharge_calibration.json")) else qm.CAL_FILE)
 JLANES={}   # junction id -> [(edge id, lane index, lane id, through phase index)]
 for eid,li,lid in APPROACH_LANES:
     u,v=e2l(eid); h=(v[0]-u[0],v[1]-u[1])
@@ -381,7 +396,7 @@ def run_one(method,t0,prob,seed,rfile,timeout,meas=None):
                         if pos>ELEN[eid]-DECIDE:
                             decided.add(eid)
                             tp=t+(ELEN[eid]-pos)/V_FREE
-                            qs=pl=None
+                            qs=pl=None; plan_val=None
                             off=ANET.offset[lk[1]]
                             if method=="GREEDY": nx=nxt_greedy(lk,tp)
                             elif method=="LA1": nx=nxt_la1(lk,tp)
@@ -413,7 +428,7 @@ def run_one(method,t0,prob,seed,rfile,timeout,meas=None):
                             qa=min(len(pl.get(l,[])) for l in qm.lanes_for(m))
                             pending[eid]={"edge":eid,"move":m,"q_ahead":qa,"t_decide":t,
                                           "t_free":tp,"pred":predicted_pass(method,lk,nx,tp,qs,pl),
-                                          "q_lanes":[len(pl.get(l,[])) for l in (0,1)],"plan_arr":plan_val}
+                                          "q_lanes":[len(pl.get(l,[])) for l in sorted(pl)],"plan_arr":plan_val}
                             ne=sedge(*nx); redges.append(ne)
                             traci.vehicle.setRoute("ego",[eid,ne])
             if added and "ego" in traci.simulation.getArrivedIDList():
@@ -425,9 +440,9 @@ def run_one(method,t0,prob,seed,rfile,timeout,meas=None):
         traci.close()
 
 def save(tag,rec,diag=None):
-    with open(f"sumo_results/{tag}.json","w") as f: json.dump(rec,f)
+    with open(f"{RESDIR}/{tag}.json","w") as f: json.dump(rec,f)
     if diag:
-        with open(f"sumo_results/diag_{tag}.json","w") as f: json.dump(diag,f)
+        with open(f"{RESDIR}/diag_{tag}.json","w") as f: json.dump(diag,f)
 
 def measure_one(method,prob,seed,rfile):
     """Traffic snapshot, taken once per seed and reused across the four

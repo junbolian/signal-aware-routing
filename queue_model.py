@@ -92,10 +92,18 @@ def _finish(reach, off, ax, m, tm):
     return reach + tm.wait(reach, off, ax, "L" if m == "L" else "S")
 
 
+LANES = {"R": (0,), "S": (0, 1), "L": (1,)}     # grid8.net.xml: kerb lane R and S, inner lane S and L
+
+
+def set_lanes(mapping):
+    """Install the lane-movement map read from the SUMO net (sumo_runner.lane_map)."""
+    global LANES
+    LANES = {k: tuple(v) for k, v in mapping.items()}
+
+
 def lanes_for(m):
-    """Lane indices admitting movement m on the two-lane grid approaches:
-    lane 0 (kerb) serves R and S, lane 1 serves S and L (grid8.net.xml)."""
-    return {"R": (0,), "S": (0, 1), "L": (1,)}[m]
+    """Lane indices admitting movement m on every approach edge."""
+    return LANES[m]
 
 
 def rates_of(rates, eid, m):
@@ -345,7 +353,7 @@ def first_link(net, orig, V, platoons_by_edge, sedge):
     for w, d in net.nbrs(orig):
         e = (orig, w)
         pl = platoons_by_edge.get(sedge(orig, w), {})
-        q = min(len(pl.get(l, [])) for l in (0, 1)) if pl else 0
+        q = min(len(pl.get(l, [])) for l in lanes_for("S")) if pl else 0
         c = net.link_t(orig, w) + V[e][min(q, QMAX)]
         if c < best[0] - 1e-9:
             best = (c, e)

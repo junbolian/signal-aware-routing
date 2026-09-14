@@ -1,0 +1,18 @@
+A. mean travel time at moderate demand (s), n = instances
+method                        base grid            channelized      diff
+SP-STATIC            1269.2 +- 10.5 (n=40)     1202.9 +- 10.5 (n=40)     -66.3
+LA-1                 1171.8 +- 19.2 (n=40)     1056.1 +- 25.1 (n=40)    -115.7
+MDP                  1169.6 +- 16.1 (n=40)     1065.2 +- 23.1 (n=40)    -104.4
+TD-OPT replan        1279.4 +- 35.3 (n=40)     1057.5 +- 24.7 (n=40)    -221.9
+SP-STATIC-Q          1246.1 +- 19.6 (n=40)     1218.0 +- 13.9 (n=40)     -28.1
+MDP-Q                1242.5 +- 26.9 (n=40)     1127.0 +- 32.6 (n=40)    -115.5
+TD-OPT-Q             1159.8 +- 21.0 (n=40)     1059.0 +- 18.1 (n=40)    -100.9
+
+B. paired differences a - b (s): mean | per-instance CI | seed-clustered CI | a faster in
+comparison                                                  base grid                        channelized
+LA-1 - SP-STATIC                        -97.4 +- 17.6 |+- 24.1| 38/40     -146.8 +- 27.4 |+- 22.8| 37/40
+TD-OPT replan - SP-STATIC               +10.2 +- 32.9 |+- 29.4| 16/40     -145.3 +- 26.7 |+- 18.9| 37/40
+TD-OPT-Q - TD-OPT replan               -119.6 +- 32.9 |+- 28.6| 34/40       +1.4 +- 29.6 |+- 25.8| 14/40
+LA-1 - TD-OPT-Q                         +12.0 +- 20.8 |+- 25.3| 18/40       -2.9 +- 30.0 |+- 28.8| 16/40
+SP-STATIC-Q - SP-STATIC                 -23.1 +- 17.4 |+- 18.8| 18/40      +15.1 +- 15.4 |+- 10.5| 12/40
+MDP-Q - MDP                             +72.9 +- 26.5 |+- 24.1|  7/40      +61.8 +- 33.3 |+- 23.9|  8/40

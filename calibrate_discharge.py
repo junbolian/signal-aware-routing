@@ -9,7 +9,7 @@ Usage:
   python3 calibrate_discharge.py [denoms] [seeds] [horizon_s]
 defaults: denoms 15, seeds 11 12, horizon 900 s. Writes discharge_calibration.json
 (LS, HS, fit diagnostics, per-demand breakdown)."""
-import sys, json
+import os, sys, json
 import traci
 import sumo_runner as R
 import signal_routing as sr
@@ -118,5 +118,7 @@ if __name__ == "__main__":
     out["release"] = {"mean_standing_at_onset": round(sum(q for q, _ in full) / len(full), 2),
                       "frac_fully_released": round(sum(1 for q, r in full if r == q) / len(full), 3),
                       "max_released_in_one_green": max(r for _, r in full)}
-    json.dump(out, open("discharge_calibration.json", "w"), indent=1)
+    outpath = os.path.join(R.RESDIR, "discharge_calibration.json") if os.environ.get("SR_RESULTS") else "discharge_calibration.json"
+    json.dump(out, open(outpath, "w"), indent=1)
+    print("wrote", outpath)
     print(json.dumps(out, indent=1))

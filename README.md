@@ -54,6 +54,7 @@ mdp_policy.py          Unknown-offset MDP: value iteration, threshold policy,
 sumo_runner.py         SUMO microscopic experiments (empty and congested).
 queue_model.py         Queue-aware planners (STATIC-Q, MDP-Q, TDOPT-Q) and the MDP in SUMO.
 queue_kernel.py        Empirical transition kernel of the count ahead (cross-fitted folds).
+make_channelized_net.py Channelized four-lane grid (grid8_rt.net.xml) for the lane-layout ablation.
 calibrate_discharge.py Discharge-law calibration from background traffic.
 run_congestion.sh      Full congestion sweep on one build (resumable).
 sumo_aggregate.py      Paired statistics and tables from SUMO outputs (original).
@@ -169,3 +170,20 @@ of the congestion tables must come from the same sweep; `sumo_results/` holds
 one build's results only. The per-crossing prediction records in
 `sumo_results/diag_*.json` compare each rolling planner's planned stopline
 passage with the realised one.
+
+### Lane-layout ablation (channelized approaches)
+
+`python3 make_channelized_net.py` builds `grid8_rt.net.xml`: four lanes per edge,
+kerb lane right-turn only, two through lanes, median lane left-turn only, so
+turning vehicles never queue behind through vehicles. Every script reads the
+network from `SR_NET` and writes to `SR_RESULTS` (defaults `grid8.net.xml`,
+`sumo_results`), so the ablation runs with
+
+```bash
+export SR_NET=grid8_rt.net.xml SR_RESULTS=sumo_results_rt      # PowerShell: $env:SR_NET="grid8_rt.net.xml"; $env:SR_RESULTS="sumo_results_rt"
+python3 calibrate_discharge.py 15,10 11,12 900
+python3 run_congestion.py --moderate-only --core-only
+python3 queue_kernel.py sumo_results_rt
+python3 run_congestion.py --moderate-only --core-only
+python3 sumo_aggregate_q.py sumo_results_rt
+```
