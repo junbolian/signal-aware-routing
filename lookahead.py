@@ -21,9 +21,9 @@ def static_V(net, tm, dest):
         h = (v[0]-u[0], v[1]-u[1])
         for w, d in net.nbrs(v):
             if w == u: continue
-            m = sr.move_type(h, d)
+            m = net.move_type(v, h, d)
             if m is None: continue
-            c = tm.ewait(sr.axis_of(h), m) + net.t_cross + net.link_t(v, w)
+            c = tm.ewait(net.axis(v, h), m) + net.t_cross + net.link_t(v, w)
             arcs_rev.setdefault((v, w), []).append((e, c))
     V = {}
     pq = []
@@ -48,7 +48,7 @@ def la_route(net, tm, orig, dest, t0, k, V):
         out = []
         for w, d in net.nbrs(v):
             if w == u: continue
-            m = sr.move_type(h, d)
+            m = net.move_type(v, h, d)
             if m is not None: out.append((m, (v, w)))
         return out
     def rec(e, t, d):
@@ -58,7 +58,7 @@ def la_route(net, tm, orig, dest, t0, k, V):
         u, v = e
         h = (v[0]-u[0], v[1]-u[1])
         for m, e2 in moves(e):
-            wt = tm.wait(t, net.offset[v], sr.axis_of(h), m)
+            wt = tm.wait(t, net.offset[v], net.axis(v, h), m)
             t2 = t + wt + net.t_cross + net.link_t(*e2)
             best = min(best, rec(e2, t2, d + 1))
         return best
@@ -79,7 +79,7 @@ def la_route(net, tm, orig, dest, t0, k, V):
         h = (v[0]-u[0], v[1]-u[1])
         bm = (float("inf"), None, None)
         for m, e2 in moves(e):
-            wt = tm.wait(t, net.offset[v], sr.axis_of(h), m)
+            wt = tm.wait(t, net.offset[v], net.axis(v, h), m)
             t2 = t + wt + net.t_cross + net.link_t(*e2)
             val = rec(e2, t2, 1)
             if val < bm[0] - 1e-9: bm = (val, e2, t2)

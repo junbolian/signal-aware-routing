@@ -13,7 +13,7 @@ def la_route_noisy(net, tm, orig, dest, t0, k, V, plan_off):
         out = []
         for w, d in net.nbrs(v):
             if w == u: continue
-            m = sr.move_type(h, d)
+            m = net.move_type(v, h, d)
             if m is not None: out.append((m, (v, w)))
         return out
     def rec(e, t, d):
@@ -23,7 +23,7 @@ def la_route_noisy(net, tm, orig, dest, t0, k, V, plan_off):
         u, v = e
         h = (v[0]-u[0], v[1]-u[1])
         for m, e2 in moves(e):
-            wt = tm.wait(t, plan_off[v], sr.axis_of(h), m)
+            wt = tm.wait(t, plan_off[v], net.axis(v, h), m)
             t2 = t + wt + net.t_cross + net.link_t(*e2)
             best = min(best, rec(e2, t2, d + 1))
         return best
@@ -43,11 +43,11 @@ def la_route_noisy(net, tm, orig, dest, t0, k, V, plan_off):
         h = (v[0]-u[0], v[1]-u[1])
         bm = (float("inf"), None)
         for m, e2 in moves(e):
-            wt_p = tm.wait(t, plan_off[v], sr.axis_of(h), m)
+            wt_p = tm.wait(t, plan_off[v], net.axis(v, h), m)
             val = rec(e2, t + wt_p + net.t_cross + net.link_t(*e2), 1)
             if val < bm[0] - 1e-9: bm = (val, e2, m, h)
         e2 = bm[1]
-        wt_true = tm.wait(t, net.offset[e[1]], sr.axis_of(bm[3]), bm[2])
+        wt_true = tm.wait(t, net.offset[e[1]], net.axis(e[1], bm[3]), bm[2])
         t = t + wt_true + net.t_cross + net.link_t(*e2)
         e = e2
         path.append(e)

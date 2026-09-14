@@ -114,6 +114,20 @@ class Net:
                 else:
                     raise ValueError(offset_mode)
 
+    # --- topology interface shared with general_net.GNet --------------------
+    # The grid answers the three topology queries from its geometry. Only the
+    # strict ordering of dist matters for the monotone class, so the scale is 1.
+    DIST_SCALE = 1.0
+
+    def axis(self, v, h):
+        return axis_of(h)
+
+    def move_type(self, v, h, d):
+        return move_type(h, d)
+
+    def dist(self, v, dest):
+        return l1(v, dest) * self.DIST_SCALE
+
     def link_t(self, u, v):
         return self.tau[frozenset((u, v))]
 
@@ -152,8 +166,8 @@ def evaluate(net, tm, path, t0):
         assert cu == pv
         h = (pv[0] - pu[0], pv[1] - pu[1])
         d = (cv[0] - cu[0], cv[1] - cu[1])
-        m = move_type(h, d)
-        wt = tm.wait(t, net.offset[cu], axis_of(h), m)
+        m = net.move_type(cu, h, d)
+        wt = tm.wait(t, net.offset[cu], net.axis(cu, h), m)
         if wt > 1e-9:
             stops += 1
         wsum += wt
@@ -166,10 +180,10 @@ def evaluate(net, tm, path, t0):
             "rights": rights, "links": len(path)}
 
 
-def count_away_moves(path, dest):
+def count_away_moves(net, path, dest):
     away = 0
     for (u, v) in path:
-        if l1(v, dest) > l1(u, dest):
+        if net.dist(v, dest) > net.dist(u, dest):
             away += 1
     return away
 
@@ -204,10 +218,10 @@ def td_route(net, tm, orig, dest, t0, plan_offsets=None):
         for w, d in net.nbrs(v):
             if w == u:
                 continue
-            m = move_type(h, d)
+            m = net.move_type(v, h, d)
             if m is None:
                 continue
-            wt = tm.wait(t, off[v], axis_of(h), m)
+            wt = tm.wait(t, off[v], net.axis(v, h), m)
             t2 = t + wt + net.t_cross + net.link_t(v, w)
             e2 = (v, w)
             if t2 < best.get(e2, float("inf")) - 1e-9:
@@ -249,10 +263,10 @@ def static_route(net, tm, orig, dest, use_ewait):
         for w, d in net.nbrs(v):
             if w == u:
                 continue
-            m = move_type(h, d)
+            m = net.move_type(v, h, d)
             if m is None:
                 continue
-            add = (tm.ewait(axis_of(h), m) if use_ewait else 0.0) + net.t_cross + net.link_t(v, w)
+            add = (tm.ewait(net.axis(v, h), m) if use_ewait else 0.0) + net.t_cross + net.link_t(v, w)
             e2 = (v, w)
             if c + add < best.get(e2, float("inf")) - 1e-9:
                 best[e2] = c + add
@@ -273,7 +287,7 @@ def greedy_route(net, tm, orig, dest, t0, tie="W"):
     Priority at each stopline: green straight > green left > right(-on-red)
     > wait for straight > wait for left. Start on the axis with the larger
     remaining gap (tie: West)."""
-    cands = [(w, d) for w, d in net.nbrs(orig) if l1(w, dest) < l1(orig, dest)]
+    cands = [(w, d) for w, d in net.nbrs(orig) if net.dist(w, dest) < net.dist(orig, dest)]
     dx, dy = dest[0] - orig[0], dest[1] - orig[1]
 
     def start_key(item):
@@ -294,17 +308,17 @@ def greedy_route(net, tm, orig, dest, t0, tie="W"):
             raise RuntimeError("greedy stuck")
         opts = {}
         for w2, d2 in net.nbrs(v):
-            if l1(w2, dest) >= l1(v, dest):
+            if net.dist(w2, dest) >= net.dist(v, dest):
                 continue
-            m = move_type(h, d2)
+            m = net.move_type(v, h, d2)
             if m is not None:
                 opts[m] = (w2, d2)
         choice = None
-        if "S" in opts and tm.wait(t, net.offset[v], axis_of(h), "S") <= 1e-9:
+        if "S" in opts and tm.wait(t, net.offset[v], net.axis(v, h), "S") <= 1e-9:
             choice = "S"
-        elif "L" in opts and tm.wait(t, net.offset[v], axis_of(h), "L") <= 1e-9:
+        elif "L" in opts and tm.wait(t, net.offset[v], net.axis(v, h), "L") <= 1e-9:
             choice = "L"
-        elif "R" in opts and tm.wait(t, net.offset[v], axis_of(h), "R") <= 1e-9:
+        elif "R" in opts and tm.wait(t, net.offset[v], net.axis(v, h), "R") <= 1e-9:
             choice = "R"
         elif "S" in opts:
             choice = "S"
@@ -315,7 +329,7 @@ def greedy_route(net, tm, orig, dest, t0, tie="W"):
         else:
             raise RuntimeError("no approaching option")
         w2, d2 = opts[choice]
-        wt = tm.wait(t, net.offset[v], axis_of(h), choice)
+        wt = tm.wait(t, net.offset[v], net.axis(v, h), choice)
         t = t + wt + net.t_cross + net.link_t(v, w2)
         path.append((v, w2))
         v, h = w2, d2
@@ -349,7 +363,7 @@ def run_scenario(name, N, n_nets, C, gs, gl, straight_first, rtor, offset_mode,
             o_path, o_t = td_route(net, tm, orig, dest, t0)
             res["TD-OPT"] = evaluate(net, tm, o_path, t0)
             assert abs(res["TD-OPT"]["time"] - (o_t - t0)) < 1e-6
-            away = count_away_moves(o_path, dest)
+            away = count_away_moves(net, o_path, dest)
             for meth, r in res.items():
                 row = dict(scenario=name, N=N, net=i, t0=round(t0, 1), method=meth,
                            time=r["time"], wait=r["wait"], stops=r["stops"],

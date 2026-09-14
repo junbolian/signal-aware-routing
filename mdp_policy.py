@@ -29,22 +29,27 @@ def build(net):
         h=(v[0]-u[0],v[1]-u[1])
         for w,d in net.nbrs(v):
             if w==u: continue
-            mt=sr.move_type(h,d)
+            # Proposition 7's class is L1-monotone: a movement is admissible
+            # only if it strictly reduces the L1 distance to the destination.
+            if net.dist(w,dest)>=net.dist(v,dest): continue
+            mt=net.move_type(v,h,d)
             if mt is None: continue
             moves[i].append((mt,idx[(v,w)],net.link_t(v,w)))
     return links,idx,moves
 
+BIG=1e9
+
 def solve_mdp(net):
     links,idx,moves=build(net)
     V=np.zeros(len(links))
-    order=sorted(range(len(links)),key=lambda i:sr.l1(links[i][1],dest))
+    order=sorted(range(len(links)),key=lambda i:net.dist(links[i][1],dest))
     sweeps=0
     for sweeps in range(1,301):
         delta=0.0
         for i in order:
             u,v=links[i]
             if v==dest: continue
-            ax=sr.axis_of((v[0]-u[0],v[1]-u[1]))
+            ax=net.axis(v,(v[0]-u[0],v[1]-u[1]))
             best=np.full(len(XI),np.inf)
             for (mt,j,taun) in moves[i]:
                 b=net.t_cross+taun+V[j]
@@ -52,6 +57,7 @@ def solve_mdp(net):
                       else W[(ax,mt)]+b)
                 np.minimum(best,cost,out=best)
             nv=best.mean()
+            if not np.isfinite(nv): V[i]=BIG; continue
             delta=max(delta,abs(nv-V[i])); V[i]=nv
         if delta<1e-4: break
     return V,idx,moves,links,sweeps
@@ -59,6 +65,7 @@ def solve_mdp(net):
 def mdp_sim(net,V,idx,moves,t0):
     best=(float("inf"),None)
     for w,d in net.nbrs(orig):
+        if net.dist(w,dest)>=net.dist(orig,dest): continue
         c=net.link_t(orig,w)+V[idx[(orig,w)]]
         if c<best[0]-1e-9: best=(c,(orig,w))
     e=best[1]; t=t0+net.link_t(*e)
@@ -70,8 +77,9 @@ def mdp_sim(net,V,idx,moves,t0):
         u,v=e
         if v in seen: revisits+=1
         seen.add(v)
-        ax=sr.axis_of((v[0]-u[0],v[1]-u[1]))
+        ax=net.axis(v,(v[0]-u[0],v[1]-u[1]))
         i=idx[e]; bm=(float("inf"),None,None)
+        if not moves[i]: raise RuntimeError("no admissible monotone move")
         for (mt,j,taun) in moves[i]:
             wt=tm.wait(t,net.offset[v],ax,mt)
             sc=wt+net.t_cross+taun+V[j]
@@ -97,7 +105,8 @@ for i in range(40):
     max_sweeps=max(max_sweeps,sw)
     Vs=static_V(net,tm,dest)
     p_st=sr.static_route(net,tm,orig,dest,use_ewait=True)
-    pred.append(min(net.link_t(orig,w)+V[idx[(orig,w)]] for w,_ in net.nbrs(orig)))
+    pred.append(min(net.link_t(orig,w)+V[idx[(orig,w)]] for w,_ in net.nbrs(orig)
+                    if net.dist(w,dest)<net.dist(orig,dest)))
     for t0 in deps:
         res["SP-STATIC"].append(sr.evaluate(net,tm,p_st,t0)["time"])
         res["GREEDY"].append(sr.evaluate(net,tm,sr.greedy_route(net,tm,orig,dest,t0),t0)["time"])
