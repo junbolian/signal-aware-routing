@@ -58,6 +58,7 @@ a smaller with a larger sample.
 - Demand-0 check: no kernel exists at demand 0, so STATIC-Q and MDP-Q ran kernel-free on network 0, seed 11. STATIC-Q gave [1248, 1219, 1189, 1159] = STATIC and MDP-Q [1017, 1099, 1121, 1030] = MDP, with identical routes (`summary_v2.json`, key `dem0_check`). These two cells are not part of the tables.
 - Empty-network validation: the analytical prediction is evaluated at the nominal departure time. kappa = mean(SUMO - model) / 13 on TDOPT_replan per network fold, and the deviation is 100 (SUMO - P) / P with P = model + 13 kappa of the other fold.
 - The LA-1 shortfall is LA-1 minus the other planner on matched trips, in percent of the other planner's mean on those trips.
+- `cross_check` in `summary_v2.json` compares the network-0 trips of this sample with the earlier depth sweep, which is not in the main tree. The committed file reports 576 trips compared and 0 differences. To reproduce it, run `git checkout pre-v2 -- sumo_results_depth` and then `python aggregate_v2.py`; without that directory the check reports 0 trips compared and every other entry is unchanged.
 
 ## Keys of summary_v2.json
 
