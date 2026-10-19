@@ -1,0 +1,6 @@
+TDOPT_replan exit=0 wall_s=68
+STATIC exit=0 wall_s=69
+LA1 exit=0 wall_s=74
+MDP exit=0 wall_s=75
+MDP-Q exit=0 wall_s=76
+TDOPT-Q exit=0 wall_s=78

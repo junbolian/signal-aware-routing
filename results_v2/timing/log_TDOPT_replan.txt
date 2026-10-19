@@ -1,0 +1,4 @@
+dem 10 TDOPT_replan 11 0.0 1169.0
+dem 10 TDOPT_replan 11 30.0 1284.0
+dem 10 TDOPT_replan 11 60.0 1367.0
+dem 10 TDOPT_replan 11 90.0 1222.0
