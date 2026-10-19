@@ -1,0 +1,843 @@
+v2 sample of record: networks [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], seeds [11, 12, 13, 14]  (generated 2026-10-19 00:28:51)
+Intervals are 95 percent half-widths. net = network-clustered t interval (K-1 df, primary); n x s = network-by-seed clusters; trip = per trip.
+
+=== shared lanes, decision 45 m, demand 0 (empty) ===
+5.1 mean travel time (s)
+   method              n miss     mean     net   n x s    trip
+   STATIC            160    0   1202.8    58.5    25.3    13.3
+   GREEDY            160    0   1109.6    39.5    17.6    11.8
+   LA1               160    0   1070.2    30.1    14.0    10.4
+   LA2               160    0   1040.1    23.4    11.4     9.8
+   LA3               160    0   1033.7    30.9    14.7    10.7
+   MDP               160    0   1081.9    30.5    14.1    12.3
+   TDOPT_open        160    0   1119.5    45.8    21.0    13.8
+   TDOPT_replan      160    0   1037.8    36.1    17.5    11.9
+   TDOPTQ            160    0   1037.2    27.4    13.8    10.9
+5.2 paired differences a - b (s), matched on (network, seed, departure)
+   a                b                 mean    net  n x s   trip  a faster
+   GREEDY           STATIC           -93.3   57.5   25.2   15.9  133/160 
+   LA1              STATIC          -132.7   59.6   26.3   15.3  146/160 
+   LA2              STATIC          -162.8   49.9   21.9   12.9  157/160 
+   LA3              STATIC          -169.2   61.6   27.2   16.0  151/160 
+   MDP              STATIC          -120.9   59.4   25.9   16.8  130/160 
+   TDOPT_open       STATIC           -83.3   83.8   37.0   20.8  105/160 
+   TDOPT_replan     STATIC          -165.0   62.8   28.0   16.4  152/160 
+   TDOPTQ           STATIC          -165.6   54.5   24.6   15.2  156/160 
+   STATIC           LA1             +132.7   59.6   26.3   15.3   12/160 
+   GREEDY           LA1              +39.4   41.8   19.1   14.6   49/160 
+   LA2              LA1              -30.1   27.2   14.0   12.4  100/160 
+   LA3              LA1              -36.5   32.3   15.9   11.9   96/160 
+   MDP              LA1              +11.8   14.9    9.7   11.3   29/160 
+   TDOPT_open       LA1              +49.4   52.4   24.3   16.2   54/160 
+   TDOPT_replan     LA1              -32.3   43.0   20.3   14.4   99/160 
+   TDOPTQ           LA1              -33.0   36.8   17.7   13.8   99/160 
+   STATIC           TDOPTQ          +165.6   54.5   24.6   15.2    4/160 
+   GREEDY           TDOPTQ           +72.4   34.7   17.0   13.7   31/160 
+   LA1              TDOPTQ           +33.0   36.8   17.7   13.8   48/160 
+   LA2              TDOPTQ            +2.9   29.9   14.8   11.5   69/160 
+   LA3              TDOPTQ            -3.5   22.8   12.9   10.6   60/160 
+   MDP              TDOPTQ           +44.7   35.9   17.9   14.3   38/160 
+   TDOPT_open       TDOPTQ           +82.3   45.3   22.4   16.1   23/160 
+   TDOPT_replan     TDOPTQ            +0.7   16.4    7.9    6.1   11/160 
+   STATIC           TDOPT_replan    +165.0   62.8   28.0   16.4    8/160 
+   GREEDY           TDOPT_replan     +71.7   27.7   14.6   13.0   27/160 
+   LA1              TDOPT_replan     +32.3   43.0   20.3   14.4   50/160 
+   LA2              TDOPT_replan      +2.2   34.8   16.5   11.5   69/160 
+   LA3              TDOPT_replan      -4.2   23.1   12.6    9.6   59/160 
+   MDP              TDOPT_replan     +44.1   43.0   20.5   14.9   43/160 
+   TDOPT_open       TDOPT_replan     +81.7   36.6   19.4   14.2   18/160 
+   TDOPTQ           TDOPT_replan      -0.7   16.4    7.9    6.1   18/160 
+   LA1              MDP              -11.8   14.9    9.7   11.3   45/160 
+5.3 one-step shortfall: lowest mean LA3 (1033.7 s); LA1 shortfall +3.5 % (LA1 - LA3 +36.5 +- 32.3 s, net)
+   LA1 against each method: STATIC -11.0 % (-132.7 +- 59.6); GREEDY -3.6 % (-39.4 +- 41.8); LA2 +2.9 % (+30.1 +- 27.2); LA3 +3.5 % (+36.5 +- 32.3); MDP -1.1 % (-11.8 +- 14.9); TDOPT_open -4.4 % (-49.4 +- 52.4); TDOPT_replan +3.1 % (+32.3 +- 43.0); TDOPTQ +3.2 % (+33.0 +- 36.8)
+
+=== shared lanes, decision 45 m, demand 1/100 ===
+5.1 mean travel time (s)
+   method              n miss     mean     net   n x s    trip
+   STATIC            160    0   1219.4    64.0    27.7    14.5
+   LA1               160    0   1119.1    38.3    18.5    13.8
+   LA2               160    0   1083.9    33.0    16.3    14.1
+   LA3               160    0   1082.7    28.5    15.2    13.1
+   MDP               160    0   1127.5    34.1    17.8    14.2
+   TDOPT_replan      160    0   1079.8    41.5    20.5    15.0
+   TDOPTQ            160    0   1065.3    36.5    19.2    14.3
+   STATICQ           160    0   1191.5    38.9    19.2    13.7
+   MDPQ              160    0   1115.3    27.7    15.9    13.1
+5.2 paired differences a - b (s), matched on (network, seed, departure)
+   a                b                 mean    net  n x s   trip  a faster
+   LA1              STATIC          -100.3   54.7   25.2   15.9  132/160 
+   LA2              STATIC          -135.5   50.1   22.8   15.0  142/160 
+   LA3              STATIC          -136.7   65.6   29.4   17.7  136/160 
+   MDP              STATIC           -91.9   57.0   26.4   16.7  121/160 
+   TDOPT_replan     STATIC          -139.6   68.5   31.0   18.1  141/160 
+   TDOPTQ           STATIC          -154.1   61.7   28.9   17.5  144/160 
+   STATICQ          STATIC           -27.9   34.0   17.3   13.1   67/160 
+   MDPQ             STATIC          -104.1   64.2   29.8   17.7  121/160 
+   STATIC           LA1             +100.3   54.7   25.2   15.9   25/160 
+   LA2              LA1              -35.2   49.0   23.7   17.2  103/160 
+   LA3              LA1              -36.4   44.7   22.0   16.8   97/160 
+   MDP              LA1               +8.4   24.9   15.0   13.5   49/160 
+   TDOPT_replan     LA1              -39.3   57.2   27.2   18.5   97/160 
+   TDOPTQ           LA1              -53.9   50.2   24.7   17.4  105/160 
+   STATICQ          LA1              +72.4   41.2   21.2   17.1   38/160 
+   MDPQ             LA1               -3.8   32.8   18.3   16.1   69/160 
+   STATIC           TDOPTQ          +154.1   61.7   28.9   17.5   16/160 
+   LA1              TDOPTQ           +53.9   50.2   24.7   17.4   49/160 
+   LA2              TDOPTQ           +18.6   36.9   18.5   14.8   58/160 
+   LA3              TDOPTQ           +17.4   27.0   15.3   13.3   53/160 
+   MDP              TDOPTQ           +62.2   43.9   22.5   18.2   48/160 
+   TDOPT_replan     TDOPTQ           +14.5   16.0   11.0    8.5   26/160 
+   STATICQ          TDOPTQ          +126.2   36.2   20.2   17.7   20/160 
+   MDPQ             TDOPTQ           +50.1   31.7   18.7   16.6   46/160 
+   STATIC           TDOPT_replan    +139.6   68.5   31.0   18.1   18/160 
+   LA1              TDOPT_replan     +39.3   57.2   27.2   18.5   60/160 
+   LA2              TDOPT_replan      +4.1   43.1   20.1   14.5   66/160 
+   LA3              TDOPT_replan      +2.9   33.3   17.0   12.1   49/160 
+   MDP              TDOPT_replan     +47.7   51.6   25.4   18.0   52/160 
+   TDOPTQ           TDOPT_replan     -14.5   16.0   11.0    8.5   45/160 
+   STATICQ          TDOPT_replan    +111.7   41.0   21.0   17.7   25/160 
+   MDPQ             TDOPT_replan     +35.5   36.4   21.5   17.2   56/160 
+   MDPQ             MDP              -12.2   19.2   13.1   12.2   50/160 
+   LA1              MDP               -8.4   24.9   15.0   13.5   46/160 
+5.3 one-step shortfall: lowest mean TDOPTQ (1065.3 s); LA1 shortfall +5.1 % (LA1 - TDOPTQ +53.9 +- 50.2 s, net)
+   LA1 against each method: STATIC -8.2 % (-100.3 +- 54.7); LA2 +3.3 % (+35.2 +- 49.0); LA3 +3.4 % (+36.4 +- 44.7); MDP -0.7 % (-8.4 +- 24.9); TDOPT_replan +3.6 % (+39.3 +- 57.2); TDOPTQ +5.1 % (+53.9 +- 50.2); STATICQ -6.1 % (-72.4 +- 41.2); MDPQ +0.3 % (+3.8 +- 32.8)
+
+=== shared lanes, decision 45 m, demand 1/50 ===
+5.1 mean travel time (s)
+   method              n miss     mean     net   n x s    trip
+   STATIC            160    0   1222.7    63.0    27.3    14.2
+   LA1               160    0   1138.8    32.5    16.2    13.7
+   LA2               160    0   1111.6    33.8    17.4    13.9
+   LA3               160    0   1122.6    29.0    15.2    12.1
+   MDP               160    0   1146.7    31.2    16.5    13.6
+   TDOPT_replan      160    0   1104.6    42.1    19.7    13.7
+   TDOPTQ            160    0   1086.0    34.9    16.7    12.1
+   STATICQ           160    0   1206.0    38.9    21.0    13.5
+   MDPQ              160    0   1138.2    24.6    16.7    13.7
+5.2 paired differences a - b (s), matched on (network, seed, departure)
+   a                b                 mean    net  n x s   trip  a faster
+   LA1              STATIC           -83.9   59.0   26.8   17.0  120/160 
+   LA2              STATIC          -111.1   50.5   23.5   15.1  132/160 
+   LA3              STATIC          -100.0   68.8   30.8   17.6  120/160 
+   MDP              STATIC           -75.9   52.6   24.4   15.5  109/160 
+   TDOPT_replan     STATIC          -118.1   75.0   33.3   18.9  136/160 
+   TDOPTQ           STATIC          -136.7   66.3   29.7   17.2  148/160 
+   STATICQ          STATIC           -16.7   36.4   19.9   13.3   77/160 
+   MDPQ             STATIC           -84.5   61.5   29.7   18.4  114/160 
+   STATIC           LA1              +83.9   59.0   26.8   17.0   34/160 
+   LA2              LA1              -27.2   45.3   22.4   17.0   89/160 
+   LA3              LA1              -16.1   45.1   21.5   17.2   86/160 
+   MDP              LA1               +8.0   23.1   13.1   14.3   45/160 
+   TDOPT_replan     LA1              -34.1   58.7   27.2   18.6   90/160 
+   TDOPTQ           LA1              -52.8   53.2   25.2   17.8   98/160 
+   STATICQ          LA1              +67.2   34.3   19.8   16.3   39/160 
+   MDPQ             LA1               -0.6   30.3   17.4   17.5   76/160 
+   STATIC           TDOPTQ          +136.7   66.3   29.7   17.2   12/160 
+   LA1              TDOPTQ           +52.8   53.2   25.2   17.8   59/160 
+   LA2              TDOPTQ           +25.6   29.9   17.4   14.9   63/160 
+   LA3              TDOPTQ           +36.7   27.6   15.0   13.9   42/160 
+   MDP              TDOPTQ           +60.8   44.1   22.9   17.4   52/160 
+   TDOPT_replan     TDOPTQ           +18.6   17.4   10.7   10.0   24/160 
+   STATICQ          TDOPTQ          +120.0   50.0   26.3   17.2   22/160 
+   MDPQ             TDOPTQ           +52.2   35.7   20.9   16.6   46/160 
+   STATIC           TDOPT_replan    +118.1   75.0   33.3   18.9   23/160 
+   LA1              TDOPT_replan     +34.1   58.7   27.2   18.6   68/160 
+   LA2              TDOPT_replan      +7.0   42.0   21.4   15.9   74/160 
+   LA3              TDOPT_replan     +18.0   36.1   17.5   13.7   42/160 
+   MDP              TDOPT_replan     +42.1   52.2   25.1   17.5   65/160 
+   TDOPTQ           TDOPT_replan     -18.6   17.4   10.7   10.0   69/160 
+   STATICQ          TDOPT_replan    +101.4   54.7   27.0   17.3   32/160 
+   MDPQ             TDOPT_replan     +33.6   37.7   22.1   17.6   68/160 
+   MDPQ             MDP               -8.6   27.2   16.9   15.4   75/160 
+   LA1              MDP               -8.0   23.1   13.1   14.3   49/160 
+5.3 one-step shortfall: lowest mean TDOPTQ (1086.0 s); LA1 shortfall +4.9 % (LA1 - TDOPTQ +52.8 +- 53.2 s, net)
+   LA1 against each method: STATIC -6.9 % (-83.9 +- 59.0); LA2 +2.4 % (+27.2 +- 45.3); LA3 +1.4 % (+16.1 +- 45.1); MDP -0.7 % (-8.0 +- 23.1); TDOPT_replan +3.1 % (+34.1 +- 58.7); TDOPTQ +4.9 % (+52.8 +- 53.2); STATICQ -5.6 % (-67.2 +- 34.3); MDPQ +0.1 % (+0.6 +- 30.3)
+
+=== shared lanes, decision 45 m, demand 1/25 ===
+5.1 mean travel time (s)
+   method              n miss     mean     net   n x s    trip
+   STATIC            160    0   1227.9    60.9    26.7    14.0
+   LA1               160    0   1175.9    28.5    16.1    14.1
+   LA2               160    0   1140.0    35.5    18.7    15.2
+   LA3               160    0   1158.2    36.7    18.5    14.0
+   MDP               160    0   1184.1    32.2    16.6    13.5
+   TDOPT_replan      160    0   1135.1    55.0    25.6    17.0
+   TDOPTQ            160    0   1103.6    43.1    21.5    15.4
+   STATICQ           160    0   1219.8    40.6    20.8    13.7
+   MDPQ              160    0   1180.1    30.9    19.0    14.5
+   MDPQOP            160    0   1185.0    33.9    17.5    14.6
+   STATICTRAFFICRT   160    0   1232.4    59.7    27.1    14.3
+5.2 paired differences a - b (s), matched on (network, seed, departure)
+   a                b                 mean    net  n x s   trip  a faster
+   LA1              STATIC           -52.0   61.3   28.1   18.1  107/160 
+   LA2              STATIC           -87.9   59.0   27.3   17.3  116/160 
+   LA3              STATIC           -69.7   79.4   35.5   19.5  101/160 
+   MDP              STATIC           -43.8   56.6   26.0   16.0   94/160 
+   TDOPT_replan     STATIC           -92.8   81.8   36.5   20.8  118/160 
+   TDOPTQ           STATIC          -124.3   70.4   31.7   19.5  133/160 
+   STATICQ          STATIC            -8.1   24.5   16.3   12.0   65/160 
+   MDPQ             STATIC           -47.8   70.8   33.3   19.5   91/160 
+   MDPQOP           STATIC           -42.9   62.5   28.9   18.1   83/160 
+   STATICTRAFFICRT  STATIC            +4.5    8.4    7.7    4.6    2/160 
+   STATIC           LA1              +52.0   61.3   28.1   18.1   52/160 
+   LA2              LA1              -35.9   48.3   25.0   19.0   95/160 
+   LA3              LA1              -17.7   56.2   28.6   20.6   87/160 
+   MDP              LA1               +8.2   25.8   14.9   13.0   52/160 
+   TDOPT_replan     LA1              -40.8   64.6   31.5   21.2   96/160 
+   TDOPTQ           LA1              -72.3   56.1   28.8   20.1  111/160 
+   STATICQ          LA1              +43.9   43.0   23.6   19.1   56/160 
+   MDPQ             LA1               +4.2   45.2   24.3   19.6   70/160 
+   MDPQOP           LA1               +9.1   43.5   21.1   19.0   73/160 
+   STATICTRAFFICRT  LA1              +56.5   59.5   28.8   18.4   51/160 
+   STATIC           TDOPTQ          +124.3   70.4   31.7   19.5   25/160 
+   LA1              TDOPTQ           +72.3   56.1   28.8   20.1   45/160 
+   LA2              TDOPTQ           +36.4   46.5   22.9   18.5   55/160 
+   LA3              TDOPTQ           +54.6   42.9   21.7   17.1   45/160 
+   MDP              TDOPTQ           +80.5   56.2   28.1   19.7   41/160 
+   TDOPT_replan     TDOPTQ           +31.5   30.9   16.9   13.7   39/160 
+   STATICQ          TDOPTQ          +116.2   54.7   28.0   19.1   22/160 
+   MDPQ             TDOPTQ           +76.5   27.9   22.9   18.6   36/160 
+   MDPQOP           TDOPTQ           +81.4   24.1   19.8   17.9   36/160 
+   STATICTRAFFICRT  TDOPTQ          +128.8   71.1   31.9   19.7   24/160 
+   STATIC           TDOPT_replan     +92.8   81.8   36.5   20.8   40/160 
+   LA1              TDOPT_replan     +40.8   64.6   31.5   21.2   63/160 
+   LA2              TDOPT_replan      +4.9   56.2   26.8   18.4   73/160 
+   LA3              TDOPT_replan     +23.1   42.4   19.9   13.6   42/160 
+   MDP              TDOPT_replan     +49.0   63.0   30.5   19.8   53/160 
+   TDOPTQ           TDOPT_replan     -31.5   30.9   16.9   13.7   75/160 
+   STATICQ          TDOPT_replan     +84.7   66.3   32.2   20.7   38/160 
+   MDPQ             TDOPT_replan     +45.0   37.1   24.9   19.3   55/160 
+   MDPQOP           TDOPT_replan     +49.9   36.2   22.6   18.9   48/160 
+   STATICTRAFFICRT  TDOPT_replan     +97.3   79.9   35.8   20.8   37/160 
+   MDPQ             MDP               -4.0   39.6   20.7   17.0   73/160 
+   MDPQOP           MDP               +0.9   38.4   18.9   17.4   72/160 
+   MDPQOP           MDPQ              +4.9   13.3   11.3   12.0   32/160 
+   LA1              MDP               -8.2   25.8   14.9   13.0   50/160 
+5.3 one-step shortfall: lowest mean TDOPTQ (1103.6 s); LA1 shortfall +6.6 % (LA1 - TDOPTQ +72.3 +- 56.1 s, net)
+   LA1 against each method: STATIC -4.2 % (-52.0 +- 61.3); LA2 +3.2 % (+35.9 +- 48.3); LA3 +1.5 % (+17.7 +- 56.2); MDP -0.7 % (-8.2 +- 25.8); TDOPT_replan +3.6 % (+40.8 +- 64.6); TDOPTQ +6.6 % (+72.3 +- 56.1); STATICQ -3.6 % (-43.9 +- 43.0); MDPQ -0.4 % (-4.2 +- 45.2); MDPQOP -0.8 % (-9.1 +- 43.5); STATICTRAFFICRT -4.6 % (-56.5 +- 59.5)
+
+=== shared lanes, decision 45 m, demand 1/15 ===
+5.1 mean travel time (s)
+   method              n miss     mean     net   n x s    trip
+   STATIC            160    0   1239.0    58.6    25.6    14.2
+   GREEDY            160    0   1284.4    38.6    19.2    15.3
+   LA1               160    0   1221.2    20.4    12.1    13.0
+   LA2               160    0   1178.4    40.0    19.5    15.8
+   LA3               160    0   1208.5    48.5    23.1    15.7
+   MDP               160    0   1218.7    31.0    15.9    13.5
+   TDOPT_open        160    0   1251.6    37.5    17.7    14.2
+   TDOPT_replan      160    0   1191.3    57.7    27.2    20.1
+   TDOPTQ            160    0   1153.3    35.8    19.8    15.5
+   STATICQ           160    0   1238.6    38.4    20.1    13.6
+   MDPQ              160    0   1205.3    20.1    14.2    14.7
+   MDPQOP            160    0   1212.7    31.6    17.6    13.8
+   STATICTRAFFIC     160    0   1320.8    31.9    19.8    11.6
+   STATICTRAFFICRT   160    0   1243.8    56.3    25.6    14.1
+5.2 paired differences a - b (s), matched on (network, seed, departure)
+   a                b                 mean    net  n x s   trip  a faster
+   GREEDY           STATIC           +45.4   52.8   24.7   16.9   43/160 
+   LA1              STATIC           -17.8   59.2   27.1   18.4   89/160 
+   LA2              STATIC           -60.6   58.1   26.5   17.5  110/160 
+   LA3              STATIC           -30.5   88.3   39.3   21.8   86/160 
+   MDP              STATIC           -20.3   54.0   25.2   16.7   84/160 
+   TDOPT_open       STATIC           +12.6   62.4   27.7   18.3   80/160 
+   TDOPT_replan     STATIC           -47.7   77.3   35.1   23.2  105/160 
+   TDOPTQ           STATIC           -85.7   67.7   31.9   21.0  108/160 
+   STATICQ          STATIC            -0.4   27.9   16.8   13.3   61/160 
+   MDPQ             STATIC           -33.7   57.1   26.8   18.5   85/160 
+   MDPQOP           STATIC           -26.3   69.9   32.1   19.5   73/160 
+   STATICTRAFFIC    STATIC           +81.8   63.1   30.4   17.2   37/160 
+   STATICTRAFFICRT  STATIC            +4.8    7.2    6.7    3.7    3/160 
+   STATIC           LA1              +17.8   59.2   27.1   18.4   69/160 
+   GREEDY           LA1              +63.1   46.9   22.8   18.6   33/160 
+   LA2              LA1              -42.8   36.0   19.2   17.6  106/160 
+   LA3              LA1              -12.7   54.8   26.2   19.2   81/160 
+   MDP              LA1               -2.5   20.1   12.0   13.5   55/160 
+   TDOPT_open       LA1              +30.3   47.6   22.5   18.1   65/160 
+   TDOPT_replan     LA1              -29.9   55.8   27.0   21.7   91/160 
+   TDOPTQ           LA1              -68.0   41.2   22.8   18.9  109/160 
+   STATICQ          LA1              +17.4   41.8   23.8   19.5   69/160 
+   MDPQ             LA1              -15.9   25.7   17.9   19.5   92/160 
+   MDPQOP           LA1               -8.5   41.0   21.8   19.9   84/160 
+   STATICTRAFFIC    LA1              +99.6   35.1   21.7   16.8   22/160 
+   STATICTRAFFICRT  LA1              +22.5   56.7   26.9   18.3   67/160 
+   STATIC           TDOPTQ           +85.7   67.7   31.9   21.0   43/160 
+   GREEDY           TDOPTQ          +131.1   37.9   23.9   21.2   18/160 
+   LA1              TDOPTQ           +68.0   41.2   22.8   18.9   47/160 
+   LA2              TDOPTQ           +25.1   46.5   24.4   19.8   64/160 
+   LA3              TDOPTQ           +55.2   56.6   28.8   20.5   51/160 
+   MDP              TDOPTQ           +65.4   46.4   26.2   20.1   44/160 
+   TDOPT_open       TDOPTQ           +98.3   34.9   20.6   18.4   35/160 
+   TDOPT_replan     TDOPTQ           +38.0   40.1   23.1   18.4   54/160 
+   STATICQ          TDOPTQ           +85.4   58.9   28.6   19.2   38/160 
+   MDPQ             TDOPTQ           +52.0   36.5   21.1   18.7   51/160 
+   MDPQOP           TDOPTQ           +59.4   37.8   20.6   17.8   39/160 
+   STATICTRAFFIC    TDOPTQ          +167.5   48.0   29.1   19.8   15/160 
+   STATICTRAFFICRT  TDOPTQ           +90.5   67.5   33.2   21.6   41/160 
+   STATIC           TDOPT_replan     +47.7   77.3   35.1   23.2   54/160 
+   GREEDY           TDOPT_replan     +93.1   44.3   22.1   21.1   38/160 
+   LA1              TDOPT_replan     +29.9   55.8   27.0   21.7   67/160 
+   LA2              TDOPT_replan     -12.9   47.5   23.7   19.3   78/160 
+   LA3              TDOPT_replan     +17.2   57.3   26.3   18.4   51/160 
+   MDP              TDOPT_replan     +27.4   57.9   27.5   20.4   61/160 
+   TDOPT_open       TDOPT_replan     +60.3   56.4   26.4   19.3   41/160 
+   TDOPTQ           TDOPT_replan     -38.0   40.1   23.1   18.4   75/160 
+   STATICQ          TDOPT_replan     +47.4   71.8   34.4   22.7   58/160 
+   MDPQ             TDOPT_replan     +14.0   44.4   23.0   20.9   65/160 
+   MDPQOP           TDOPT_replan     +21.4   42.6   23.4   19.3   61/160 
+   STATICTRAFFIC    TDOPT_replan    +129.5   55.7   30.6   21.5   28/160 
+   STATICTRAFFICRT  TDOPT_replan     +52.5   77.1   35.4   23.4   53/160 
+   MDPQ             MDP              -13.4   33.5   20.3   18.7   83/160 
+   MDPQOP           MDP               -6.0   49.7   25.7   19.5   74/160 
+   MDPQOP           MDPQ              +7.4   21.7   13.2   11.1   43/160 
+   LA1              MDP               +2.5   20.1   12.0   13.5   55/160 
+5.3 one-step shortfall: lowest mean TDOPTQ (1153.3 s); LA1 shortfall +5.9 % (LA1 - TDOPTQ +68.0 +- 41.2 s, net)
+   LA1 against each method: STATIC -1.4 % (-17.8 +- 59.2); GREEDY -4.9 % (-63.1 +- 46.9); LA2 +3.6 % (+42.8 +- 36.0); LA3 +1.1 % (+12.7 +- 54.8); MDP +0.2 % (+2.5 +- 20.1); TDOPT_open -2.4 % (-30.3 +- 47.6); TDOPT_replan +2.5 % (+29.9 +- 55.8); TDOPTQ +5.9 % (+68.0 +- 41.2); STATICQ -1.4 % (-17.4 +- 41.8); MDPQ +1.3 % (+15.9 +- 25.7); MDPQOP +0.7 % (+8.5 +- 41.0); STATICTRAFFIC -7.5 % (-99.6 +- 35.1); STATICTRAFFICRT -1.8 % (-22.5 +- 56.7)
+
+=== shared lanes, decision 45 m, demand 1/10 ===
+5.1 mean travel time (s)
+   method              n miss     mean     net   n x s    trip
+   STATIC            160    0   1260.0    56.6    25.2    14.2
+   LA1               160    0   1263.7    33.8    19.2    15.7
+   LA2               160    0   1236.1    45.7    22.8    16.6
+   LA3               160    0   1238.4    42.6    20.8    16.1
+   MDP               160    0   1259.4    28.2    19.4    14.2
+   TDOPT_replan      160    0   1225.4    57.9    28.3    18.2
+   TDOPTQ            160    0   1200.0    29.4    18.7    16.0
+   STATICQ           160    0   1263.5    39.5    19.8    14.1
+   MDPQ              160    0   1245.7    27.4    15.0    12.1
+   MDPQOP            160    0   1255.2    25.7    14.8    12.2
+   STATICTRAFFICRT   160    0   1268.0    55.8    26.1    14.4
+5.2 paired differences a - b (s), matched on (network, seed, departure)
+   a                b                 mean    net  n x s   trip  a faster
+   LA1              STATIC            +3.7   73.0   34.2   21.3   71/160 
+   LA2              STATIC           -23.9   73.3   34.4   20.8   88/160 
+   LA3              STATIC           -21.6   80.8   36.9   22.0   88/160 
+   MDP              STATIC            -0.6   63.6   31.5   19.6   71/160 
+   TDOPT_replan     STATIC           -34.6   61.7   30.8   20.1  101/160 
+   TDOPTQ           STATIC           -60.0   71.3   33.4   21.4   94/160 
+   STATICQ          STATIC            +3.5   43.8   22.1   15.3   71/160 
+   MDPQ             STATIC           -14.3   65.3   30.4   17.8   75/160 
+   MDPQOP           STATIC            -4.8   53.2   26.4   15.9   65/160 
+   STATICTRAFFICRT  STATIC            +8.0   13.6    9.2    5.5    4/160 
+   STATIC           LA1               -3.7   73.0   34.2   21.3   85/160 
+   LA2              LA1              -27.6   42.1   22.3   18.8   96/160 
+   LA3              LA1              -25.3   47.8   22.8   19.4   91/160 
+   MDP              LA1               -4.3   20.1   12.4   13.8   63/160 
+   TDOPT_replan     LA1              -38.3   60.0   29.8   21.6   89/160 
+   TDOPTQ           LA1              -63.7   33.2   22.9   20.9  101/160 
+   STATICQ          LA1               -0.2   61.0   31.4   21.7   80/160 
+   MDPQ             LA1              -18.0   38.5   20.3   18.3   84/160 
+   MDPQOP           LA1               -8.5   40.1   23.1   18.3   80/160 
+   STATICTRAFFICRT  LA1               +4.3   68.8   33.7   21.0   81/160 
+   STATIC           TDOPTQ           +60.0   71.3   33.4   21.4   59/160 
+   LA1              TDOPTQ           +63.7   33.2   22.9   20.9   54/160 
+   LA2              TDOPTQ           +36.1   38.1   24.8   22.0   59/160 
+   LA3              TDOPTQ           +38.4   33.8   21.5   20.3   56/160 
+   MDP              TDOPTQ           +59.4   33.9   22.6   20.8   43/160 
+   TDOPT_replan     TDOPTQ           +25.4   52.0   26.9   21.7   65/160 
+   STATICQ          TDOPTQ           +63.5   54.8   27.6   21.1   52/160 
+   MDPQ             TDOPTQ           +45.7   31.0   20.2   18.2   52/160 
+   MDPQOP           TDOPTQ           +55.2   36.8   21.5   18.3   49/160 
+   STATICTRAFFICRT  TDOPTQ           +68.0   68.8   33.4   21.4   55/160 
+   STATIC           TDOPT_replan     +34.6   61.7   30.8   20.1   54/160 
+   LA1              TDOPT_replan     +38.3   60.0   29.8   21.6   70/160 
+   LA2              TDOPT_replan     +10.7   60.3   29.8   21.1   63/160 
+   LA3              TDOPT_replan     +13.0   61.4   28.2   18.9   56/160 
+   MDP              TDOPT_replan     +34.0   52.7   26.4   19.9   64/160 
+   TDOPTQ           TDOPT_replan     -25.4   52.0   26.9   21.7   85/160 
+   STATICQ          TDOPT_replan     +38.1   46.6   24.4   19.6   57/160 
+   MDPQ             TDOPT_replan     +20.3   45.2   23.9   19.2   67/160 
+   MDPQOP           TDOPT_replan     +29.8   44.6   23.2   18.8   64/160 
+   STATICTRAFFICRT  TDOPT_replan     +42.7   59.1   30.8   19.9   51/160 
+   MDPQ             MDP              -13.7   35.9   21.5   17.3   81/160 
+   MDPQOP           MDP               -4.2   28.1   20.4   16.8   71/160 
+   MDPQOP           MDPQ              +9.5   25.0   14.6   12.4   38/160 
+   LA1              MDP               +4.3   20.1   12.4   13.8   53/160 
+5.3 one-step shortfall: lowest mean TDOPTQ (1200.0 s); LA1 shortfall +5.3 % (LA1 - TDOPTQ +63.7 +- 33.2 s, net)
+   LA1 against each method: STATIC +0.3 % (+3.7 +- 73.0); LA2 +2.2 % (+27.6 +- 42.1); LA3 +2.0 % (+25.3 +- 47.8); MDP +0.3 % (+4.3 +- 20.1); TDOPT_replan +3.1 % (+38.3 +- 60.0); TDOPTQ +5.3 % (+63.7 +- 33.2); STATICQ +0.0 % (+0.2 +- 61.0); MDPQ +1.4 % (+18.0 +- 38.5); MDPQOP +0.7 % (+8.5 +- 40.1); STATICTRAFFICRT -0.3 % (-4.3 +- 68.8)
+
+=== channelized lanes, decision 45 m, demand 1/25 ===
+5.1 mean travel time (s)
+   method              n miss     mean     net   n x s    trip
+   STATIC            160    0   1159.1    68.5    29.5    15.2
+   LA1               160    0   1088.6    29.0    14.8    13.0
+   MDP               160    0   1091.9    35.3    17.2    13.6
+   TDOPT_replan      160    0   1057.6    44.2    22.2    16.2
+   TDOPTQ            160    0   1049.9    38.3    18.2    13.7
+   STATICQ           160    0   1164.3    69.3    29.8    15.4
+   MDPQ              160    0   1085.4    26.9    15.0    14.3
+5.2 paired differences a - b (s), matched on (network, seed, departure)
+   a                b                 mean    net  n x s   trip  a faster
+   LA1              STATIC           -70.5   69.8   31.1   18.5  112/160 
+   MDP              STATIC           -67.1   62.6   28.2   17.4  108/160 
+   TDOPT_replan     STATIC          -101.5   75.7   34.6   20.9  126/160 
+   TDOPTQ           STATIC          -109.2   70.4   31.4   18.8  122/160 
+   STATICQ          STATIC            +5.2    6.2    3.7    3.8   43/160 
+   MDPQ             STATIC           -73.6   64.1   29.1   18.8  115/160 
+   STATIC           LA1              +70.5   69.8   31.1   18.5   45/160 
+   MDP              LA1               +3.3   21.8   13.0   13.3   51/160 
+   TDOPT_replan     LA1              -31.0   41.1   20.8   17.2   92/160 
+   TDOPTQ           LA1              -38.7   42.8   21.4   16.8  100/160 
+   STATICQ          LA1              +75.7   69.3   30.9   18.3   41/160 
+   MDPQ             LA1               -3.1   16.6   13.2   13.9   63/160 
+   STATIC           TDOPTQ          +109.2   70.4   31.4   18.8   35/160 
+   LA1              TDOPTQ           +38.7   42.8   21.4   16.8   53/160 
+   MDP              TDOPTQ           +42.0   54.3   25.6   17.9   53/160 
+   TDOPT_replan     TDOPTQ            +7.7   18.2   13.4   10.7   37/160 
+   STATICQ          TDOPTQ          +114.4   71.0   31.7   18.7   34/160 
+   MDPQ             TDOPTQ           +35.5   45.7   22.7   17.1   52/160 
+   STATIC           TDOPT_replan    +101.5   75.7   34.6   20.9   34/160 
+   LA1              TDOPT_replan     +31.0   41.1   20.8   17.2   53/160 
+   MDP              TDOPT_replan     +34.3   52.6   24.3   17.5   55/160 
+   TDOPTQ           TDOPT_replan      -7.7   18.2   13.4   10.7   57/160 
+   STATICQ          TDOPT_replan    +106.7   76.1   34.5   20.9   32/160 
+   MDPQ             TDOPT_replan     +27.9   44.3   21.5   17.1   53/160 
+   MDPQ             MDP               -6.5   17.3    9.1    8.8   32/160 
+   LA1              MDP               -3.3   21.8   13.0   13.3   54/160 
+5.3 one-step shortfall: lowest mean TDOPTQ (1049.9 s); LA1 shortfall +3.7 % (LA1 - TDOPTQ +38.7 +- 42.8 s, net)
+   LA1 against each method: STATIC -6.1 % (-70.5 +- 69.8); MDP -0.3 % (-3.3 +- 21.8); TDOPT_replan +2.9 % (+31.0 +- 41.1); TDOPTQ +3.7 % (+38.7 +- 42.8); STATICQ -6.5 % (-75.7 +- 69.3); MDPQ +0.3 % (+3.1 +- 16.6)
+
+=== channelized lanes, decision 45 m, demand 1/15 ===
+5.1 mean travel time (s)
+   method              n miss     mean     net   n x s    trip
+   STATIC            160    0   1162.0    70.0    30.1    15.6
+   LA1               160    0   1119.5    26.7    14.9    14.7
+   MDP               160    0   1126.5    37.7    19.6    14.7
+   TDOPT_replan      160    0   1095.0    44.7    22.7    16.3
+   TDOPTQ            160    0   1066.9    34.7    17.5    13.1
+   STATICQ           160    0   1168.8    69.2    29.9    15.5
+   MDPQ              160    0   1125.5    29.5    17.4    15.7
+   MDPQOP            160    0   1129.7    29.2    16.4    16.1
+5.2 paired differences a - b (s), matched on (network, seed, departure)
+   a                b                 mean    net  n x s   trip  a faster
+   LA1              STATIC           -42.5   79.0   35.4   21.0   96/160 
+   MDP              STATIC           -35.5   76.0   34.5   21.2   94/160 
+   TDOPT_replan     STATIC           -66.9   90.7   40.7   23.3  106/160 
+   TDOPTQ           STATIC           -95.1   75.8   33.6   19.9  117/160 
+   STATICQ          STATIC            +6.8    6.3    4.6    5.2   41/160 
+   MDPQ             STATIC           -36.5   79.2   36.0   23.0   88/160 
+   MDPQOP           STATIC           -32.3   80.5   36.2   23.4   85/160 
+   STATIC           LA1              +42.5   79.0   35.4   21.0   64/160 
+   MDP              LA1               +7.0   18.2   10.7   14.2   53/160 
+   TDOPT_replan     LA1              -24.4   45.3   23.5   19.4   82/160 
+   TDOPTQ           LA1              -52.6   47.1   23.8   19.9  103/160 
+   STATICQ          LA1              +49.3   77.1   34.6   21.4   61/160 
+   MDPQ             LA1               +6.0   15.7   13.4   17.5   64/160 
+   MDPQOP           LA1              +10.2   22.3   14.9   18.2   62/160 
+   STATIC           TDOPTQ           +95.1   75.8   33.6   19.9   42/160 
+   LA1              TDOPTQ           +52.6   47.1   23.8   19.9   48/160 
+   MDP              TDOPTQ           +59.6   57.9   27.7   20.0   46/160 
+   TDOPT_replan     TDOPTQ           +28.2   33.6   19.1   14.9   36/160 
+   STATICQ          TDOPTQ          +101.9   74.9   33.7   19.7   36/160 
+   MDPQ             TDOPTQ           +58.6   50.5   26.0   19.7   43/160 
+   MDPQOP           TDOPTQ           +62.8   48.5   24.8   19.7   42/160 
+   STATIC           TDOPT_replan     +66.9   90.7   40.7   23.3   54/160 
+   LA1              TDOPT_replan     +24.4   45.3   23.5   19.4   61/160 
+   MDP              TDOPT_replan     +31.5   50.7   25.7   19.1   56/160 
+   TDOPTQ           TDOPT_replan     -28.2   33.6   19.1   14.9   75/160 
+   STATICQ          TDOPT_replan     +73.8   89.0   40.1   23.2   49/160 
+   MDPQ             TDOPT_replan     +30.5   44.9   23.8   19.7   55/160 
+   MDPQOP           TDOPT_replan     +34.6   43.3   22.2   20.5   51/160 
+   MDPQ             MDP               -1.0   20.8   15.1   13.5   54/160 
+   MDPQOP           MDP               +3.2   29.4   16.8   15.7   48/160 
+   MDPQOP           MDPQ              +4.2   12.5    8.7    8.3   15/160 
+   LA1              MDP               -7.0   18.2   10.7   14.2   52/160 
+5.3 one-step shortfall: lowest mean TDOPTQ (1066.9 s); LA1 shortfall +4.9 % (LA1 - TDOPTQ +52.6 +- 47.1 s, net)
+   LA1 against each method: STATIC -3.7 % (-42.5 +- 79.0); MDP -0.6 % (-7.0 +- 18.2); TDOPT_replan +2.2 % (+24.4 +- 45.3); TDOPTQ +4.9 % (+52.6 +- 47.1); STATICQ -4.2 % (-49.3 +- 77.1); MDPQ -0.5 % (-6.0 +- 15.7); MDPQOP -0.9 % (-10.2 +- 22.3)
+
+=== channelized lanes, decision 45 m, demand 1/10 ===
+5.1 mean travel time (s)
+   method              n miss     mean     net   n x s    trip
+   STATIC            160    0   1160.7    69.5    29.9    15.4
+   LA1               160    0   1135.5    23.1    12.6    13.8
+   MDP               160    0   1150.5    32.4    16.4    14.6
+   TDOPT_replan      160    0   1131.0    43.1    22.0    16.5
+   TDOPTQ            160    0   1107.3    28.7    14.2    12.8
+   STATICQ           160    0   1175.5    72.2    31.4    16.5
+   MDPQ              160    0   1162.0    31.8    18.6    17.7
+5.2 paired differences a - b (s), matched on (network, seed, departure)
+   a                b                 mean    net  n x s   trip  a faster
+   LA1              STATIC           -25.2   78.2   34.5   20.6   82/160 
+   MDP              STATIC           -10.2   71.2   31.8   20.3   78/160 
+   TDOPT_replan     STATIC           -29.7   90.7   40.8   23.8   89/160 
+   TDOPTQ           STATIC           -53.4   75.9   33.4   20.0   95/160 
+   STATICQ          STATIC           +14.8   16.1    9.0    6.9   60/160 
+   MDPQ             STATIC            +1.3   76.0   35.1   23.6   80/160 
+   STATIC           LA1              +25.2   78.2   34.5   20.6   77/160 
+   MDP              LA1              +15.0   21.2   14.0   16.1   43/160 
+   TDOPT_replan     LA1               -4.5   45.3   23.4   19.5   75/160 
+   TDOPTQ           LA1              -28.2   39.6   19.9   19.0   97/160 
+   STATICQ          LA1              +40.0   78.5   35.3   21.5   68/160 
+   MDPQ             LA1              +26.4   26.8   17.4   22.4   62/160 
+   STATIC           TDOPTQ           +53.4   75.9   33.4   20.0   63/160 
+   LA1              TDOPTQ           +28.2   39.6   19.9   19.0   58/160 
+   MDP              TDOPTQ           +43.2   49.3   23.9   20.3   49/160 
+   TDOPT_replan     TDOPTQ           +23.7   37.4   20.2   15.9   44/160 
+   STATICQ          TDOPTQ           +68.2   81.6   35.8   21.1   58/160 
+   MDPQ             TDOPTQ           +54.6   43.2   23.4   23.2   53/160 
+   STATIC           TDOPT_replan     +29.7   90.7   40.8   23.8   70/160 
+   LA1              TDOPT_replan      +4.5   45.3   23.4   19.5   68/160 
+   MDP              TDOPT_replan     +19.4   44.7   22.9   19.1   58/160 
+   TDOPTQ           TDOPT_replan     -23.7   37.4   20.2   15.9   77/160 
+   STATICQ          TDOPT_replan     +44.5   96.4   43.2   24.8   63/160 
+   MDPQ             TDOPT_replan     +30.9   42.0   24.3   22.7   59/160 
+   MDPQ             MDP              +11.5   26.4   16.9   18.4   63/160 
+   LA1              MDP              -15.0   21.2   14.0   16.1   67/160 
+5.3 one-step shortfall: lowest mean TDOPTQ (1107.3 s); LA1 shortfall +2.5 % (LA1 - TDOPTQ +28.2 +- 39.6 s, net)
+   LA1 against each method: STATIC -2.2 % (-25.2 +- 78.2); MDP -1.3 % (-15.0 +- 21.2); TDOPT_replan +0.4 % (+4.5 +- 45.3); TDOPTQ +2.5 % (+28.2 +- 39.6); STATICQ -3.4 % (-40.0 +- 78.5); MDPQ -2.3 % (-26.4 +- 26.8)
+
+=== shared lanes, decision 100 m, demand 1/15 ===
+5.1 mean travel time (s)
+   method              n miss     mean     net   n x s    trip
+   STATIC            160    0   1239.0    58.6    25.6    14.2
+   LA1               160    0   1235.1    27.9    14.8    14.6
+   MDP               160    0   1222.5    32.5    16.8    13.9
+   TDOPT_replan      160    0   1196.4    56.3    27.4    18.9
+   TDOPTQ            160    0   1148.8    30.3    18.6    15.6
+5.2 paired differences a - b (s), matched on (network, seed, departure)
+   a                b                 mean    net  n x s   trip  a faster
+   LA1              STATIC            -3.9   53.5   24.8   18.2   81/160 
+   MDP              STATIC           -16.5   52.4   24.8   16.7   87/160 
+   TDOPT_replan     STATIC           -42.6   77.0   35.6   22.3  100/160 
+   TDOPTQ           STATIC           -90.2   63.8   30.8   20.3  116/160 
+   STATIC           LA1               +3.9   53.5   24.8   18.2   76/160 
+   MDP              LA1              -12.6   22.7   13.8   13.6   58/160 
+   TDOPT_replan     LA1              -38.6   60.6   30.7   22.9   95/160 
+   TDOPTQ           LA1              -86.3   39.6   23.5   19.2  113/160 
+   STATIC           TDOPTQ           +90.2   63.8   30.8   20.3   42/160 
+   LA1              TDOPTQ           +86.3   39.6   23.5   19.2   43/160 
+   MDP              TDOPTQ           +73.7   50.6   27.4   20.0   48/160 
+   TDOPT_replan     TDOPTQ           +47.6   39.0   23.9   19.1   41/160 
+   STATIC           TDOPT_replan     +42.6   77.0   35.6   22.3   59/160 
+   LA1              TDOPT_replan     +38.6   60.6   30.7   22.9   61/160 
+   MDP              TDOPT_replan     +26.0   65.3   31.2   21.7   60/160 
+   TDOPTQ           TDOPT_replan     -47.6   39.0   23.9   19.1   94/160 
+   LA1              MDP              +12.6   22.7   13.8   13.6   45/160 
+5.3 one-step shortfall: lowest mean TDOPTQ (1148.8 s); LA1 shortfall +7.5 % (LA1 - TDOPTQ +86.3 +- 39.6 s, net)
+   LA1 against each method: STATIC -0.3 % (-3.9 +- 53.5); MDP +1.0 % (+12.6 +- 22.7); TDOPT_replan +3.2 % (+38.6 +- 60.6); TDOPTQ +7.5 % (+86.3 +- 39.6)
+
+=== channelized lanes, decision 100 m, demand 1/15 ===
+5.1 mean travel time (s)
+   method              n miss     mean     net   n x s    trip
+   STATIC            160    0   1162.0    70.0    30.1    15.6
+   LA1               160    0   1077.8    26.6    13.4    11.6
+   MDP               160    0   1087.5    33.2    16.5    12.2
+   TDOPT_replan      160    0   1037.5    39.6    17.9    12.0
+   TDOPTQ            160    0   1035.7    35.9    17.1    11.5
+5.2 paired differences a - b (s), matched on (network, seed, departure)
+   a                b                 mean    net  n x s   trip  a faster
+   LA1              STATIC           -84.1   75.6   33.4   18.7  117/160 
+   MDP              STATIC           -74.5   70.4   31.3   18.2  111/160 
+   TDOPT_replan     STATIC          -124.4   83.9   36.6   19.8  130/160 
+   TDOPTQ           STATIC          -126.3   77.2   34.1   18.8  131/160 
+   STATIC           LA1              +84.1   75.6   33.4   18.7   41/160 
+   MDP              LA1               +9.7   18.1   11.8   11.9   48/160 
+   TDOPT_replan     LA1              -40.3   39.4   18.0   14.0   94/160 
+   TDOPTQ           LA1              -42.2   45.1   21.8   16.3  103/160 
+   STATIC           TDOPTQ          +126.3   77.2   34.1   18.8   27/160 
+   LA1              TDOPTQ           +42.2   45.1   21.8   16.3   49/160 
+   MDP              TDOPTQ           +51.8   56.0   26.0   17.1   44/160 
+   TDOPT_replan     TDOPTQ            +1.9   21.4   12.2    9.6   55/160 
+   STATIC           TDOPT_replan    +124.4   83.9   36.6   19.8   27/160 
+   LA1              TDOPT_replan     +40.3   39.4   18.0   14.0   49/160 
+   MDP              TDOPT_replan     +49.9   50.9   23.4   15.7   41/160 
+   TDOPTQ           TDOPT_replan      -1.9   21.4   12.2    9.6   65/160 
+   LA1              MDP               -9.7   18.1   11.8   11.9   57/160 
+5.3 one-step shortfall: lowest mean TDOPTQ (1035.7 s); LA1 shortfall +4.1 % (LA1 - TDOPTQ +42.2 +- 45.1 s, net)
+   LA1 against each method: STATIC -7.2 % (-84.1 +- 75.6); MDP -0.9 % (-9.7 +- 18.1); TDOPT_replan +3.9 % (+40.3 +- 39.4); TDOPTQ +4.1 % (+42.2 +- 45.1)
+
+5.4 crossing diagnostics at the decided stopline: realised minus planned crossing time (s)
+   layout       dec  den method        mv     n q_ahead    mean     sd
+   shared        45   25 LA1           S   1124    0.54    +2.7    3.6
+   shared        45   25 LA1           L    451    0.48    +6.9   23.8
+   shared        45   25 LA1           R    505    0.67   +18.6   25.5
+   shared        45   25 LA2           S    779    0.42    +2.0    2.1
+   shared        45   25 LA2           L    601    0.35    +4.4   17.9
+   shared        45   25 LA2           R    700    0.51   +10.1   18.7
+   shared        45   25 LA3           S    904    0.47    +2.1    2.2
+   shared        45   25 LA3           L    541    0.46    +8.5   26.8
+   shared        45   25 LA3           R    635    0.61   +13.5   23.0
+   shared        45   25 MDP           S   1031    0.58    +2.8    4.3
+   shared        45   25 MDP           L    466    0.47    +8.2   26.5
+   shared        45   25 MDP           R    583    0.63   +17.9   25.5
+   shared        45   25 TDOPT_replan  S    930    0.35    +2.2    5.0
+   shared        45   25 TDOPT_replan  L    530    0.44    +8.9   27.8
+   shared        45   25 TDOPT_replan  R    620    0.45   +10.5   19.3
+   shared        45   25 STATICQ       S    148    0.30    -7.8   24.2
+   shared        45   25 STATICQ       L    915    0.52    +2.9   33.3
+   shared        45   25 STATICQ       R   1017    0.15    +1.0    6.6
+   shared        45   25 MDPQ          S   1001    0.35    +1.5    0.7
+   shared        45   25 MDPQ          L    503    0.55    +1.6    4.8
+   shared        45   25 MDPQ          R    576    0.46    +2.2    2.5
+   shared        45   25 MDPQOP        S   1043    0.33    +1.5    0.7
+   shared        45   25 MDPQOP        L    484    0.55    +1.2    8.8
+   shared        45   25 MDPQOP        R    553    0.45    +2.2    2.4
+   shared        45   25 TDOPTQ        S    942    0.27    +1.4    2.7
+   shared        45   25 TDOPTQ        L    544    0.33    +0.8   11.7
+   shared        45   25 TDOPTQ        R    594    0.44    +1.9    1.8
+   shared        45   15 GREEDY        S   1434    1.21    +3.9    4.8
+   shared        45   15 GREEDY        L    319    1.23   +33.1   49.6
+   shared        45   15 GREEDY        R    327    1.29   +22.3   25.4
+   shared        45   15 LA1           S   1172    1.03    +3.7    5.0
+   shared        45   15 LA1           L    420    0.76   +12.8   33.4
+   shared        45   15 LA1           R    488    1.25   +24.9   28.0
+   shared        45   15 LA2           S    791    0.87    +3.0    3.4
+   shared        45   15 LA2           L    594    0.60    +6.9   24.6
+   shared        45   15 LA2           R    695    0.89   +13.1   21.4
+   shared        45   15 LA3           S    922    0.90    +2.9    3.2
+   shared        45   15 LA3           L    530    0.79   +10.3   30.3
+   shared        45   15 LA3           R    628    1.12   +17.9   25.6
+   shared        45   15 MDP           S   1035    1.13    +3.8    4.5
+   shared        45   15 MDP           L    459    0.85   +10.7   30.7
+   shared        45   15 MDP           R    586    1.16   +21.8   27.4
+   shared        45   15 TDOPT_replan  S    946    0.87    +3.3    5.6
+   shared        45   15 TDOPT_replan  L    521    0.72   +12.8   33.4
+   shared        45   15 TDOPT_replan  R    613    0.82   +14.8   23.7
+   shared        45   15 STATICQ       S    201    0.91    -8.9   24.7
+   shared        45   15 STATICQ       L    877    1.01    +1.0   33.0
+   shared        45   15 STATICQ       R   1002    0.40    -0.1   10.2
+   shared        45   15 MDPQ          S    912    0.59    +1.6    0.8
+   shared        45   15 MDPQ          L    538    1.14    +1.4    9.8
+   shared        45   15 MDPQ          R    630    0.72    +2.9    3.8
+   shared        45   15 MDPQOP        S    982    0.56    +1.6    2.7
+   shared        45   15 MDPQOP        L    514    1.12    +1.4    9.9
+   shared        45   15 MDPQOP        R    584    0.62    +3.0    3.8
+   shared        45   15 TDOPTQ        S    935    0.70    +1.7    5.3
+   shared        45   15 TDOPTQ        L    555    0.68    +1.1    5.0
+   shared        45   15 TDOPTQ        R    594    0.90    +2.4    5.5
+   shared        45   10 LA1           S   1126    1.40    +3.7    5.4
+   shared        45   10 LA1           L    441    1.12   +14.7   36.3
+   shared        45   10 LA1           R    513    1.55   +26.3   28.9
+   shared        45   10 LA2           S    824    1.31    +3.4    4.8
+   shared        45   10 LA2           L    571    1.08   +11.7   33.8
+   shared        45   10 LA2           R    685    1.14   +14.1   22.9
+   shared        45   10 LA3           S    907    1.34    +3.4    3.9
+   shared        45   10 LA3           L    530    1.14   +12.9   35.4
+   shared        45   10 LA3           R    643    1.34   +17.2   26.3
+   shared        45   10 MDP           S    973    1.64    +4.4    5.1
+   shared        45   10 MDP           L    490    1.14   +14.8   35.7
+   shared        45   10 MDP           R    617    1.37   +23.4   28.1
+   shared        45   10 TDOPT_replan  S    905    1.18    +3.2    3.8
+   shared        45   10 TDOPT_replan  L    532    1.10   +15.0   36.2
+   shared        45   10 TDOPT_replan  R    643    1.10   +15.4   24.6
+   shared        45   10 STATICQ       S    379    1.39    -9.8   27.1
+   shared        45   10 STATICQ       L    783    1.42    -5.8   31.5
+   shared        45   10 STATICQ       R    918    0.70    -0.2   13.8
+   shared        45   10 MDPQ          S    998    0.78    +1.7    2.6
+   shared        45   10 MDPQ          L    496    1.46    +1.2    4.9
+   shared        45   10 MDPQ          R    586    1.01    +3.8    6.2
+   shared        45   10 MDPQOP        S   1010    0.79    +1.7    2.7
+   shared        45   10 MDPQOP        L    496    1.48    +1.5    0.4
+   shared        45   10 MDPQOP        R    574    0.94    +4.1    6.0
+   shared        45   10 TDOPTQ        S    961    0.87    +1.3    4.6
+   shared        45   10 TDOPTQ        L    539    0.98    +1.4    9.2
+   shared        45   10 TDOPTQ        R    582    1.17    +2.3    4.6
+   channelized   45   25 LA1           S   1094    0.47    +2.8    6.4
+   channelized   45   25 LA1           L    464    0.00    +8.9   27.9
+   channelized   45   25 LA1           R    522    0.00    +1.8    4.6
+   channelized   45   25 MDP           S   1008    0.42    +2.5    4.8
+   channelized   45   25 MDP           L    477    0.00   +10.9   30.9
+   channelized   45   25 MDP           R    595    0.00    +1.6    3.5
+   channelized   45   25 TDOPT_replan  S    916    0.28    +2.5    8.9
+   channelized   45   25 TDOPT_replan  L    542    0.00    +8.7   28.0
+   channelized   45   25 TDOPT_replan  R    626    0.00    +1.6    3.4
+   channelized   45   25 STATICQ       L    960    0.00    +4.3   33.4
+   channelized   45   25 STATICQ       R   1120    0.00    +1.4    0.3
+   channelized   45   25 MDPQ          S    999    0.31    +1.7    5.1
+   channelized   45   25 MDPQ          L    479    0.00   +10.4   30.2
+   channelized   45   25 MDPQ          R    602    0.00    +1.7    4.3
+   channelized   45   25 TDOPTQ        S    801    0.23    +2.0    8.5
+   channelized   45   25 TDOPTQ        L    614    0.00    +5.6   23.7
+   channelized   45   25 TDOPTQ        R    667    0.00    +1.4    1.0
+   channelized   45   15 LA1           S   1101    0.91    +3.4    6.6
+   channelized   45   15 LA1           L    462    0.00   +15.7   37.2
+   channelized   45   15 LA1           R    517    0.00    +3.1   10.3
+   channelized   45   15 MDP           S   1011    0.92    +3.4    5.2
+   channelized   45   15 MDP           L    477    0.00   +15.8   37.1
+   channelized   45   15 MDP           R    592    0.00    +2.5    7.4
+   channelized   45   15 TDOPT_replan  S    933    0.62    +2.8    8.2
+   channelized   45   15 TDOPT_replan  L    532    0.00   +18.0   39.2
+   channelized   45   15 TDOPT_replan  R    615    0.00    +2.1    5.8
+   channelized   45   15 STATICQ       L    960    0.00    +5.0   33.6
+   channelized   45   15 STATICQ       R   1120    0.00    +1.4    1.0
+   channelized   45   15 MDPQ          S    968    0.65    +1.4    3.9
+   channelized   45   15 MDPQ          L    500    0.00   +12.8   33.5
+   channelized   45   15 MDPQ          R    612    0.00    +2.3    7.1
+   channelized   45   15 MDPQOP        S    945    0.60    +1.4    4.0
+   channelized   45   15 MDPQOP        L    512    0.00   +13.3   34.2
+   channelized   45   15 MDPQOP        R    623    0.00    +2.2    6.3
+   channelized   45   15 TDOPTQ        S    785    0.46    +1.3    7.7
+   channelized   45   15 TDOPTQ        L    623    0.00    +9.9   30.1
+   channelized   45   15 TDOPTQ        R    672    0.00    +1.6    3.9
+   channelized   45   10 LA1           S   1110    1.41    +4.0    7.0
+   channelized   45   10 LA1           L    454    0.00   +19.7   41.3
+   channelized   45   10 LA1           R    516    0.00    +3.6   10.5
+   channelized   45   10 MDP           S   1030    1.47    +4.1    6.7
+   channelized   45   10 MDP           L    465    0.00   +19.6   41.1
+   channelized   45   10 MDP           R    585    0.00    +3.5   10.7
+   channelized   45   10 TDOPT_replan  S    956    1.13    +3.6    8.6
+   channelized   45   10 TDOPT_replan  L    524    0.00   +23.1   45.0
+   channelized   45   10 TDOPT_replan  R    600    0.00    +3.4   10.7
+   channelized   45   10 STATICQ       L    960    0.00    +5.9   33.9
+   channelized   45   10 STATICQ       R   1120    0.00    +1.5    2.3
+   channelized   45   10 MDPQ          S    969    0.93    +1.8    6.1
+   channelized   45   10 MDPQ          L    508    0.00   +15.3   36.8
+   channelized   45   10 MDPQ          R    603    0.00    +3.2   10.0
+   channelized   45   10 TDOPTQ        S    765    0.78    +1.7    7.3
+   channelized   45   10 TDOPTQ        L    636    0.00   +13.5   35.1
+   channelized   45   10 TDOPTQ        R    681    0.00    +3.2   10.0
+   shared       100   15 LA1           S   1137    1.36    +4.5    6.6
+   shared       100   15 LA1           L    442    1.03   +17.0   38.1
+   shared       100   15 LA1           R    501    1.45   +27.0   28.4
+   shared       100   15 MDP           S   1021    1.47    +4.9    7.6
+   shared       100   15 MDP           L    470    1.11   +10.8   30.3
+   shared       100   15 MDP           R    589    1.40   +23.8   28.0
+   shared       100   15 TDOPT_replan  S    924    1.22    +4.0    7.6
+   shared       100   15 TDOPT_replan  L    533    0.95   +15.0   35.8
+   shared       100   15 TDOPT_replan  R    623    1.06   +15.6   23.7
+   shared       100   15 TDOPTQ        S    868    1.00    +2.3    6.7
+   shared       100   15 TDOPTQ        L    590    0.95    +2.7   15.9
+   shared       100   15 TDOPTQ        R    626    1.18    +2.9    5.4
+   channelized  100   15 LA1           S   1109    1.10    +4.5    8.2
+   channelized  100   15 LA1           L    457    0.00    +2.7   10.5
+   channelized  100   15 LA1           R    514    0.00    +2.1    0.7
+   channelized  100   15 MDP           S   1007    1.08    +4.3    7.8
+   channelized  100   15 MDP           L    479    0.00    +3.7   14.4
+   channelized  100   15 MDP           R    594    0.00    +2.1    0.6
+   channelized  100   15 TDOPT_replan  S    926    0.93    +4.1   10.3
+   channelized  100   15 TDOPT_replan  L    536    0.00    +2.7   10.5
+   channelized  100   15 TDOPT_replan  R    618    0.00    +2.0    0.5
+   channelized  100   15 TDOPTQ        S    768    0.74    +2.6    8.2
+   channelized  100   15 TDOPTQ        L    632    0.00    +1.9    5.6
+   channelized  100   15 TDOPTQ        R    680    0.00    +2.0    0.4
+
+5.7 empty-network validation (Task 4): kappa_A = 13.819 s (fit on fold A, even networks, 80 TDOPT_replan trips), kappa_B = 10.248 s (80 trips); pooled 12.033 s
+   deviation of SUMO from the analytical prediction + 13 kappa of the other fold, percent of that prediction
+   method            n   mean %    net   trip  fold A %  fold B %
+   STATIC          160    -5.60   5.45   1.21     -1.05    -10.14
+   GREEDY          160    -5.93   4.35   1.41     -2.59     -9.27
+   LA1             160    -7.50   3.63   1.25     -4.56    -10.44
+   LA2             160    -5.58   2.50   1.05     -3.58     -7.57
+   LA3             160    -3.54   2.09   1.06     -2.34     -4.74
+   MDP             160    -5.28   3.65   1.24     -1.47     -9.08
+   TDOPT_open      160    +8.00   4.71   1.44    +10.64     +5.36
+   TDOPT_replan    160    +0.14   4.26   1.29     +4.60     -4.32
+   TDOPTQ          160    +0.07   3.74   1.20     +4.36     -4.22
+
+5.5 value calibration by action, shared lanes, decision 45 m: planned - realised remaining time + kappa x remaining crossings (s)
+   kappa of the other network fold (Task 4); grouped by the movement chosen and the count ahead at the decision
+    den method   mv ahead     n     mean     net
+     25 MDP      S      0   669    -15.6    19.6
+     25 MDP      S    >=1   362    -30.8    28.5
+     25 MDP      L      0   296     -4.6    17.5
+     25 MDP      L    >=1   170    -26.5    20.6
+     25 MDP      R      0   372     -7.7    23.8
+     25 MDP      R    >=1   211    -42.9    21.7
+     25 MDPQ     S      0   785    +30.2    22.8
+     25 MDPQ     S    >=1   216     +9.0    19.3
+     25 MDPQ     L      0   316    +34.2    26.0
+     25 MDPQ     L    >=1   187    +19.6    19.8
+     25 MDPQ     R      0   441    +25.2    25.4
+     25 MDPQ     R    >=1   135    +31.5    28.4
+     25 MDPQOP   S      0   830    +24.6    23.8
+     25 MDPQOP   S    >=1   213     +4.9    25.1
+     25 MDPQOP   L      0   309    +38.7    27.6
+     25 MDPQOP   L    >=1   175    +27.1    24.0
+     25 MDPQOP   R      0   425    +36.1    29.9
+     25 MDPQOP   R    >=1   128    +20.1    27.0
+     25 TDOPTQ   S      0   782    -20.6    27.1
+     25 TDOPTQ   S    >=1   160     -0.9    44.8
+     25 TDOPTQ   L      0   428    -19.6    27.0
+     25 TDOPTQ   L    >=1   116    -21.6    26.6
+     25 TDOPTQ   R      0   436    -26.0    26.1
+     25 TDOPTQ   R    >=1   158    -15.5    47.7
+     15 MDP      S      0   537    -26.9    26.1
+     15 MDP      S    >=1   498    -45.7    21.4
+     15 MDP      L      0   248    -15.4    15.3
+     15 MDP      L    >=1   211    -35.7    22.4
+     15 MDP      R      0   326    -22.3    22.2
+     15 MDP      R    >=1   260    -52.2    18.7
+     15 MDPQ     S      0   631    +22.1    20.1
+     15 MDPQ     S    >=1   281    +13.8    20.9
+     15 MDPQ     L      0   261    +27.9    16.3
+     15 MDPQ     L    >=1   277    +26.2    20.9
+     15 MDPQ     R      0   451    +29.2    18.9
+     15 MDPQ     R    >=1   179    +35.5    22.1
+     15 MDPQOP   S      0   663    +23.1    24.3
+     15 MDPQOP   S    >=1   319    +17.8    29.4
+     15 MDPQOP   L      0   251    +24.9    28.7
+     15 MDPQOP   L    >=1   263    +29.3    25.4
+     15 MDPQOP   R      0   444    +28.8    27.9
+     15 MDPQOP   R    >=1   140    +41.1    28.7
+     15 TDOPTQ   S      0   645    -45.7    27.8
+     15 TDOPTQ   S    >=1   290    -33.2    28.6
+     15 TDOPTQ   L      0   373    -52.8    29.6
+     15 TDOPTQ   L    >=1   182    -27.4    30.8
+     15 TDOPTQ   R      0   367    -48.2    30.8
+     15 TDOPTQ   R    >=1   227    -42.3    32.1
+     10 MDP      S      0   372    -42.2    17.5
+     10 MDP      S    >=1   601    -65.8    16.5
+     10 MDP      L      0   237    -28.9    16.5
+     10 MDP      L    >=1   253    -53.8    14.9
+     10 MDP      R      0   341    -31.1    16.0
+     10 MDP      R    >=1   276    -77.7    15.5
+     10 MDPQ     S      0   638     +7.0    19.4
+     10 MDPQ     S    >=1   360     +4.3    20.6
+     10 MDPQ     L      0   213    +14.3    23.0
+     10 MDPQ     L    >=1   283    +10.8    24.8
+     10 MDPQ     R      0   384     +6.8    22.9
+     10 MDPQ     R    >=1   202    +28.0    26.4
+     10 MDPQOP   S      0   631     +0.7    17.5
+     10 MDPQOP   S    >=1   379     -5.9    21.6
+     10 MDPQOP   L      0   219     +5.6    21.0
+     10 MDPQOP   L    >=1   277    +13.5    12.3
+     10 MDPQOP   R      0   405     +6.0    17.2
+     10 MDPQOP   R    >=1   169    +23.3    21.3
+     10 TDOPTQ   S      0   568    -69.6    21.2
+     10 TDOPTQ   S    >=1   393    -57.9    25.5
+     10 TDOPTQ   L      0   317    -73.9    27.4
+     10 TDOPTQ   L    >=1   222    -52.2    29.4
+     10 TDOPTQ   R      0   320    -68.5    23.8
+     10 TDOPTQ   R    >=1   262    -50.8    22.4
+
+5.6 traffic-aware routers, shared lanes, decision 45 m (paired as in 5.2)
+   1/25  STATICTRAFFICRT  - STATIC    +4.5 net   8.4 n x s   7.7 trip   4.6  a faster 2/160  route = STATIC route in 152/160 trips
+   1/15  STATICTRAFFIC    - STATIC   +81.8 net  63.1 n x s  30.4 trip  17.2  a faster 37/160
+   1/15  STATICTRAFFICRT  - STATIC    +4.8 net   7.2 n x s   6.7 trip   3.7  a faster 3/160  route = STATIC route in 140/160 trips
+   1/10  STATICTRAFFICRT  - STATIC    +8.0 net  13.6 n x s   9.2 trip   5.5  a faster 4/160  route = STATIC route in 140/160 trips
+
+5.8 cross-check, network 0, seeds 11-14, against sumo_results_depth: 576 trips compared, 0 differ
+   demand-0 check STATICQ-STATIC (network 0, seed 11): [1248.0, 1219.0, 1189.0, 1159.0] vs [1248.0, 1219.0, 1189.0, 1159.0]  times identical True, routes identical True
+   demand-0 check MDPQ-MDP (network 0, seed 11): [1017.0, 1099.0, 1121.0, 1030.0] vs [1017.0, 1099.0, 1121.0, 1030.0]  times identical True, routes identical True
+
+Run health: runs, trips, trips without arrival, trips with any teleport in the network, trips where the ego teleported, total wall time
+   shared       d45  runs  2522 trips 10088 no arrival   0 teleport trips  264 ego teleported   0 wall   42.0 core-h
+   channelized  d45  runs   880 trips  3520 no arrival   0 teleport trips  128 ego teleported   2 wall   23.9 core-h
+   shared       d100 runs   200 trips   800 no arrival   0 teleport trips   29 ego teleported   0 wall    4.6 core-h
+   channelized  d100 runs   200 trips   800 no arrival   0 teleport trips   29 ego teleported   0 wall    5.0 core-h
+Kernels: file, transitions, estimated on networks, used by networks, sources
+   shared       d45  kernel_dem100_foldA.json       2880  est [1, 3, 5, 7, 9]  used by [0, 2, 4, 6, 8]  ['LA1', 'MDP', 'TDOPT_replan']
+   shared       d45  kernel_dem100_foldB.json       2880  est [0, 2, 4, 6, 8]  used by [1, 3, 5, 7, 9]  ['LA1', 'MDP', 'TDOPT_replan']
+   shared       d45  kernel_dem10_foldA.json        2880  est [1, 3, 5, 7, 9]  used by [0, 2, 4, 6, 8]  ['LA1', 'MDP', 'TDOPT_replan']
+   shared       d45  kernel_dem10_foldB.json        2880  est [0, 2, 4, 6, 8]  used by [1, 3, 5, 7, 9]  ['LA1', 'MDP', 'TDOPT_replan']
+   shared       d45  kernel_dem10_op_foldA.json      960  est [1, 3, 5, 7, 9]  used by [0, 2, 4, 6, 8]  ['MDPQ']
+   shared       d45  kernel_dem10_op_foldB.json      960  est [0, 2, 4, 6, 8]  used by [1, 3, 5, 7, 9]  ['MDPQ']
+   shared       d45  kernel_dem15_foldA.json        3840  est [1, 3, 5, 7, 9]  used by [0, 2, 4, 6, 8]  ['LA1', 'MDP', 'TDOPT_replan', 'GREEDY']
+   shared       d45  kernel_dem15_foldB.json        3840  est [0, 2, 4, 6, 8]  used by [1, 3, 5, 7, 9]  ['LA1', 'MDP', 'TDOPT_replan', 'GREEDY']
+   shared       d45  kernel_dem15_op_foldA.json      960  est [1, 3, 5, 7, 9]  used by [0, 2, 4, 6, 8]  ['MDPQ']
+   shared       d45  kernel_dem15_op_foldB.json      960  est [0, 2, 4, 6, 8]  used by [1, 3, 5, 7, 9]  ['MDPQ']
+   shared       d45  kernel_dem25_foldA.json        2880  est [1, 3, 5, 7, 9]  used by [0, 2, 4, 6, 8]  ['LA1', 'MDP', 'TDOPT_replan']
+   shared       d45  kernel_dem25_foldB.json        2880  est [0, 2, 4, 6, 8]  used by [1, 3, 5, 7, 9]  ['LA1', 'MDP', 'TDOPT_replan']
+   shared       d45  kernel_dem25_op_foldA.json      960  est [1, 3, 5, 7, 9]  used by [0, 2, 4, 6, 8]  ['MDPQ']
+   shared       d45  kernel_dem25_op_foldB.json      960  est [0, 2, 4, 6, 8]  used by [1, 3, 5, 7, 9]  ['MDPQ']
+   shared       d45  kernel_dem50_foldA.json        2880  est [1, 3, 5, 7, 9]  used by [0, 2, 4, 6, 8]  ['LA1', 'MDP', 'TDOPT_replan']
+   shared       d45  kernel_dem50_foldB.json        2880  est [0, 2, 4, 6, 8]  used by [1, 3, 5, 7, 9]  ['LA1', 'MDP', 'TDOPT_replan']
+   channelized  d45  kernel_dem10_foldA.json        2880  est [1, 3, 5, 7, 9]  used by [0, 2, 4, 6, 8]  ['LA1', 'MDP', 'TDOPT_replan']
+   channelized  d45  kernel_dem10_foldB.json        2880  est [0, 2, 4, 6, 8]  used by [1, 3, 5, 7, 9]  ['LA1', 'MDP', 'TDOPT_replan']
+   channelized  d45  kernel_dem15_foldA.json        2880  est [1, 3, 5, 7, 9]  used by [0, 2, 4, 6, 8]  ['LA1', 'MDP', 'TDOPT_replan']
+   channelized  d45  kernel_dem15_foldB.json        2880  est [0, 2, 4, 6, 8]  used by [1, 3, 5, 7, 9]  ['LA1', 'MDP', 'TDOPT_replan']
+   channelized  d45  kernel_dem15_op_foldA.json      960  est [1, 3, 5, 7, 9]  used by [0, 2, 4, 6, 8]  ['MDPQ']
+   channelized  d45  kernel_dem15_op_foldB.json      960  est [0, 2, 4, 6, 8]  used by [1, 3, 5, 7, 9]  ['MDPQ']
+   channelized  d45  kernel_dem25_foldA.json        2884  est [1, 3, 5, 7, 9]  used by [0, 2, 4, 6, 8]  ['LA1', 'MDP', 'TDOPT_replan']
+   channelized  d45  kernel_dem25_foldB.json        2880  est [0, 2, 4, 6, 8]  used by [1, 3, 5, 7, 9]  ['LA1', 'MDP', 'TDOPT_replan']

@@ -1,0 +1,10 @@
+Regression gate (Task 0.4): SR_NETSEED=0, seed 11, demand 1/15, decision 45 m, grid8.net.xml
+new: results_v2/regression/dem15_<METHOD>_n0_11.json   reference: sumo_results_depth/dem15_<METHOD>_11.json
+
+STATIC        new [1308.0, 1225.0, 1309.0, 1279.0]  reference [1308.0, 1225.0, 1309.0, 1279.0]  travel times identical: YES  per-crossing diag records identical: YES
+LA1           new [1187.0, 1038.0, 1245.0, 1160.0]  reference [1187.0, 1038.0, 1245.0, 1160.0]  travel times identical: YES  per-crossing diag records identical: YES
+TDOPT_replan  new [1130.0, 1284.0, 1425.0, 1225.0]  reference [1130.0, 1284.0, 1425.0, 1225.0]  travel times identical: YES  per-crossing diag records identical: YES
+TDOPTQ        new [1120.0, 1090.0, 1243.0, 1218.0]  reference [1120.0, 1090.0, 1243.0, 1218.0]  travel times identical: YES  per-crossing diag records identical: YES
+LA2           new [1257.0, 1107.0, 1420.0, 1287.0]  reference [1257.0, 1107.0, 1420.0, 1287.0]  travel times identical: YES  per-crossing diag records identical: YES
+
+GATE PASSED: all 20 trips identical
