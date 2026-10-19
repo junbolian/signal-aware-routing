@@ -1,14 +1,16 @@
 cff-version: 1.2.0
 message: "If you use this code, please cite the paper below."
 title: "Signal-Aware Routing"
+version: "v1.0-trc"
+date-released: 2026-10-19
+repository-code: "https://github.com/junbolian/signal-aware-routing"
+license: MIT
 authors:
   - family-names: Lian
     given-names: Junbo Jacob
-year: 2026
-license: MIT
 preferred-citation:
   type: unpublished
-  title: "Routing Through Traffic Signals: The Value, Depth, and Accuracy of Phase Information"
+  title: "The Value of Traffic-Signal Phase Information for Route Choice: How Much, How Far Ahead, and How Accurate"
   authors:
     - family-names: Lian
       given-names: Junbo Jacob
@@ -18,7 +20,5 @@ preferred-citation:
       given-names: Zheng
     - family-names: Zhang
       given-names: Chaoyu
-    - family-names: Xu
-      given-names: Zeshui
   year: 2026
-  notes: "Working paper"
+  notes: "Submitted to Transportation Research Part C: Emerging Technologies"
