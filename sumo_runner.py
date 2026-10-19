@@ -3,7 +3,7 @@
   python3 sumo_runner.py mod <METHOD> <seed>
   python3 sumo_runner.py dem <METHOD> <seed> <denom>
 METHOD is one of STATIC, GREEDY, LA1, MDP, TDOPT_open, TDOPT_replan,
-STATIC-TRAFFIC, STATIC-TRAFFIC-RT, STATIC-Q, MDP-Q, TDOPT-Q.
+STATIC-TRAFFIC, STATIC-TRAFFIC-RT, STATIC-Q, MDP-Q, MDP-Q-OP, TDOPT-Q.
 MDP is the paper's unknown-offset local-information optimum (Proposition 7)
 executed in SUMO. The -Q methods are the queue-aware planners of
 queue_model.py: they estimate the arrival rate of every approach lane from the
@@ -12,14 +12,27 @@ ego at every decision point, and carry the platoon it rides as state; MDP-Q
 solves Proposition 7's Bellman equation with the discharge-aware wait,
 STATIC-Q its phase-blind counterpart, TDOPT-Q the full-timing plan.
 Writes JSON results to sumo_results/ and, for every replanning method, a
-per-crossing prediction diagnostic to sumo_results/diag_<tag>.json."""
-import os, sys, math, json, random, heapq
+per-crossing prediction diagnostic to sumo_results/diag_<tag>.json.
+
+Sample of record v2 (results_v2/): SR_NETSEED=j selects analytical network j
+(offsets from random.Random(1000 + j); j = 0 is the network of every earlier
+run), every result tag then carries the network (dem<den>_<METHOD>_n<j>_<seed>),
+STATIC-Q, MDP-Q and MDP-Q-OP load the cross-fitted kernel of their network fold
+(kernel_dem<den>[_op]_fold<A|B>.json in SR_RESULTS, see queue_kernel.py), and a
+meta_<tag>.json sidecar records teleports, routes and wall time. MDP-Q-OP
+(MDPQOP) is MDP-Q with the kernel estimated from MDP-Q's own crossings.
+Without SR_NETSEED the tags, the network and the kernel (none) are as before."""
+import os, sys, math, json, random, heapq, tempfile, time
 import sumo, sumolib, traci
 import signal_routing as sr
 from lookahead import static_V, la_route
 import queue_model as qm
 import queue_kernel as qk
-KERNEL=None   # set per scenario in main (kernel_<prefix>_fold<A|B>.json in RESDIR)
+KERNEL=None   # v2 (SR_NETSEED set): loaded in main from kernel_dem<den>[_op]_fold<A|B>.json in RESDIR; legacy runs leave it None
+NETSEED=os.environ.get("SR_NETSEED")                    # SR_NETSEED: analytical network index j (v2 sample of record)
+NETJ=int(NETSEED) if NETSEED not in (None,"") else 0
+NTAG=f"_n{NETJ}" if NETSEED not in (None,"") else ""   # network field of the result tag, empty for legacy runs
+PORT=int(os.environ["SR_PORT"]) if os.environ.get("SR_PORT") else None   # SR_PORT: fixed TraCI port (parallel drivers)
 
 SH=sumo.SUMO_HOME; SUMO_BIN=os.path.join(SH,"bin","sumo"+(".exe" if os.name=="nt" else ""))
 NETF=os.environ.get("SR_NET","grid8.net.xml")          # SR_NET selects the network (grid8_rt.net.xml = channelized variant)
@@ -30,8 +43,10 @@ N=8; ORIG,DEST=(7,0),(0,7); V_FREE=8.33
 T0S=[0.0,30.0,60.0,90.0]; DECIDE=float(os.environ.get("SR_DECIDE","45.0"))   # SR_DECIDE: decision point, metres before the stopline
 MEAS_WIN=240.0; MEAS_EVERY=20.0
 ALIAS={"STATIC-TRAFFIC":"STATICTRAFFIC","STATIC-TRAFFIC-RT":"STATICTRAFFICRT",
-       "STATIC-Q":"STATICQ","MDP-Q":"MDPQ","TDOPT-Q":"TDOPTQ"}
-QMETH=("STATICQ","MDPQ","TDOPTQ")
+       "STATIC-Q":"STATICQ","MDP-Q":"MDPQ","TDOPT-Q":"TDOPTQ","MDP-Q-OP":"MDPQOP"}
+QMETH=("STATICQ","MDPQ","TDOPTQ","MDPQOP")
+KMETH=("STATICQ","MDPQ","MDPQOP")   # planners that use the transition kernel
+MDPQS=("MDPQ","MDPQOP")             # MDP-Q and its on-policy-kernel twin
 LAK={"LA2":2,"LA3":3,"LA4":4,"LA5":5}
 ROLLING=("GREEDY","LA1","MDP","TDOPT_replan")+tuple(LAK)+QMETH
 RT_VMIN=2.0
@@ -42,8 +57,10 @@ def nid(p): return f"{chr(65+p[0])}{p[1]}"
 net=sumolib.net.readNet(NETF)
 ELEN={e.getID():e.getLength() for e in net.getEdges()}
 TAU0=ELEN[nid((0,0))+nid((1,0))]/V_FREE
-rng=random.Random(1000)
-ANET=sr.Net(N,rng,C=C,link_lo=TAU0,link_hi=TAU0,offset_mode="random")
+def build_anet(j):
+    """Analytical network j of the v2 sample: offsets from random.Random(1000 + j)."""
+    return sr.Net(N,random.Random(1000+j),C=C,link_lo=TAU0,link_hi=TAU0,offset_mode="random")
+ANET=build_anet(NETJ)
 VSTAT=static_V(ANET,TM,DEST)
 def sedge(u,v): return nid(u)+nid(v)
 VMDP0,_=qm.solve_values(ANET,TM,DEST,None,sedge)   # Proposition 7 value, no queues
@@ -122,7 +139,7 @@ def measure_links(prob,seed,rfile,queue_free=False):
     surface with the signal delay left out of the link cost."""
     traci.start([SUMO_BIN,"-n",NETF,"-r",rfile,"--seed",str(seed),
                  "--step-length","1","--no-warnings","--no-step-log",
-                 "--time-to-teleport","600"])
+                 "--time-to-teleport","600"],port=PORT)
     try:
         T=tls_tables(); cache={}
         eids=[e.getID() for e in net.getEdges()]
@@ -266,7 +283,7 @@ def predicted_pass(method,e,e2,tp,qs,pl):
     discharge model (or its phase expectation for STATIC-Q) for the -Q ones."""
     (u,v)=e; m=move_of(e,e2); ax=sr.axis_of((v[0]-u[0],v[1]-u[1]))
     if method=="STATICQ": return tp+qm.head_ewait(tp,ax,m,TM,pl)
-    if method in ("MDPQ","TDOPTQ"): return qm.head_pass(tp,ANET.offset[v],ax,m,TM,pl)
+    if method in MDPQS+("TDOPTQ",): return qm.head_pass(tp,ANET.offset[v],ax,m,TM,pl)
     return tp+TM.wait(tp,ANET.offset[v],ax,m)
 
 def nxt_greedy(e,t):
@@ -334,13 +351,22 @@ def nxt_mdp(e,t):
         if val<bm[0]-1e-9: bm=(val,e2)
     return bm[1]
 
+_QV={}
+def q_values(static):
+    """Kernel values of STATIC-Q (static=True) or MDP-Q; they depend only on the
+    network and KERNEL, so they are solved once per process instead of at every
+    decision (same deterministic computation, same values)."""
+    if static not in _QV:
+        _QV[static],_=qm.solve_values(ANET,TM,DEST,KERNEL,sedge,static=static)
+    return _QV[static]
+
 def first_link(method,t0,meas=None,qs=None,pbe=None):
     """qs: arrival-rate estimate per approach lane; pbe: observed platoons on
     each candidate first edge (the ego sees its first link at departure)."""
     if method=="MDP":
         return mdp_first_link(VMDP),None
-    if method in ("STATICQ","MDPQ"):
-        V,_=qm.solve_values(ANET,TM,DEST,KERNEL,sedge,static=(method=="STATICQ"))
+    if method in KMETH:
+        V=q_values(method=="STATICQ")
         return qm.first_link(ANET,ORIG,V,pbe,sedge),None
     if method=="TDOPTQ":
         return qm.tdoptq_first_link(ANET,TM,ORIG,t0,DEST,qs,pbe,sedge),None
@@ -380,7 +406,7 @@ def routes_file(path,prob):
 def run_one(method,t0,prob,seed,rfile,timeout,meas=None):
     traci.start([SUMO_BIN,"-n",NETF,"-r",rfile,"--seed",str(seed),
                  "--step-length","1","--no-warnings","--no-step-log",
-                 "--time-to-teleport","600"])
+                 "--time-to-teleport","600"],port=PORT)
     try:
         T=tls_tables(); cache={}
         warm=240.0 if prob>0 else 0.0
@@ -436,9 +462,9 @@ def run_one(method,t0,prob,seed,rfile,timeout,meas=None):
                                 p=td_from_link(lk,tp); nx=p[1]
                             else:
                                 qs=est.rates(); pl=platoons(eid,pos,t)
-                                if method in ("STATICQ","MDPQ"):
-                                    VQ,_=qm.solve_values(ANET,TM,DEST,KERNEL,sedge,static=(method=="STATICQ"))
-                                    nx,plan_val=qm.decide(ANET,TM,lk,tp,DEST,VQ,pl,KERNEL,off=(off if method=="MDPQ" else None),with_value=True)
+                                if method in KMETH:
+                                    VQ=q_values(method=="STATICQ")
+                                    nx,plan_val=qm.decide(ANET,TM,lk,tp,DEST,VQ,pl,KERNEL,off=(off if method in MDPQS else None),with_value=True)
                                 else:
                                     pth,plan_val=qm.tdoptq_path(ANET,TM,lk,tp,DEST,qs,pl,sedge); nx=pth[1]
                             if pl is None: pl=platoons(eid,pos,t)
@@ -450,7 +476,7 @@ def run_one(method,t0,prob,seed,rfile,timeout,meas=None):
                                     qmin=min(len(pl.get(l,[])) for l in qm.lanes_for(mm))
                                     if method=="MDP": tv=VMDP[e2]
                                     elif method=="LA1" or method in LAK: tv=VSTAT[e2]
-                                    elif method in ("STATICQ","MDPQ"): tv=float(VQ[e2][min(qmin,qm.QMAX)])
+                                    elif method in KMETH: tv=float(VQ[e2][min(qmin,qm.QMAX)])
                                     else: tv=float("nan")
                                     opts.append(f"{mm}:head={hp:5.1f} q={[len(pl.get(l,[])) for l in qm.lanes_for(mm)]} tail={tv:7.1f}")
                                 print(f"    t={t:.0f} {eid} phase={(tp-off)%C:5.1f} choose {m} | "+" | ".join(opts),flush=True)
@@ -513,6 +539,18 @@ if __name__=="__main__":
     elif mode=="dem":
         method=ALIAS.get(sys.argv[2],sys.argv[2]); seed=int(sys.argv[3]); den=int(sys.argv[4])
         prob=(1.0/den) if den>0 else 0.0; rf=f"dem{den}.rou.xml"
+        if NTAG:
+            # one route file per process: parallel drivers must not rewrite a file
+            # another SUMO instance is reading (the content depends only on den)
+            os.makedirs(os.path.join(tempfile.gettempdir(),"sr_v2"),exist_ok=True)
+            rf=os.path.join(tempfile.gettempdir(),"sr_v2",f"dem{den}_{os.getpid()}.rou.xml")
+            if method in KMETH and den>0:
+                ktag="_op" if method=="MDPQOP" else ""
+                KERNEL=qk.load(f"dem{den}{ktag}",net=NETJ,res=RESDIR)
+                print(f"kernel {qk.kernel_path(f'dem{den}{ktag}',net=NETJ,res=RESDIR)} n_transitions={KERNEL.n}",flush=True)
+            elif method=="MDPQOP":
+                raise SystemExit("MDPQOP needs the on-policy kernel of a demand level > 0")
+        wall0=time.time()
         routes_file(rf,prob)
         meas=measure_one(method,prob,seed,rf)
         rec=[]; dg=[]
@@ -520,10 +558,20 @@ if __name__=="__main__":
         # departures of seed s are shifted by 12 (s - 11) s to spread the departure
         # phase over the cycle (ten seeds x four departures = forty distinct phases)
         deps=[(t0+12.0*(seed-11))%C for t0 in T0S] if den==0 else T0S
+        meta=[]
         for t0 in deps:
             r=run_one(method,t0,prob,seed,rf,3600,meas)
             rec.append(r); report(method,("dem",den,method,seed,t0,r)); dg.append(LASTRUN.get("diag",[]))
-        save(f"dem{den}_{method}_{seed}",rec,dg)
+            meta.append({"t0":t0,"dep":LASTRUN.get("dep"),"arr":LASTRUN.get("arr"),"route":LASTRUN.get("route"),
+                         "teleports":len(LASTRUN.get("teleports",[])),"ego_teleported":"ego" in LASTRUN.get("teleports",[])})
+        tag=f"dem{den}_{method}{NTAG}_{seed}"
+        if NTAG:
+            os.remove(rf)
+            with open(f"{RESDIR}/meta_{tag}.json","w") as f:
+                json.dump({"net":NETJ,"seed":seed,"den":den,"method":method,"decide":DECIDE,"netfile":NETF,
+                           "kernel":(None if KERNEL is None else {"n_transitions":KERNEL.n,"path":KERNEL.path}),
+                           "wall_s":time.time()-wall0,"trips":meta},f)
+        save(tag,rec,dg)
     else:
         method=ALIAS.get(sys.argv[2],sys.argv[2]); seed=int(sys.argv[3])
         routes_file("mod.rou.xml",1.0/15.0)
