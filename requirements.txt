@@ -1,5 +1,7 @@
-matplotlib>=3.7
-# Optional, for the SUMO experiments:
-# eclipse-sumo
-# sumolib
-# traci
+# Python 3.11. Versions of the environment that produced results_v2.
+numpy==2.4.6
+scipy==1.17.1
+matplotlib==3.11.2
+eclipse-sumo==1.27.1
+sumolib==1.27.1
+traci==1.27.1

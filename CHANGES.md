@@ -1,5 +1,15 @@
 # Queue-aware congestion benchmark: files and what changed
 
+## v1.0-trc (October 2026)
+
+- SUMO sample of record v2 in `results_v2/`: ten offset realizations, four background seeds, four departures, both lane layouts, decision points at 45 m and 100 m, network-clustered inference. Drivers `run_v2.py` and `aggregate_v2.py`; tables `build_tables_v2.py`; figures `make_figures_v3.py`.
+- `sumo_runner.py` takes the network index from `SR_NETSEED` and loads the cross-fitted kernel for STATIC-Q, MDP-Q, and MDP-Q-OP. In earlier versions `KERNEL` was declared but never assigned, so STATIC-Q and MDP-Q ran without the empirical kernel.
+- `queue_kernel.py` cross-fits by network fold; `sumo_aggregate_q.py` computes analytical predictions on any of the ten networks.
+- `p4_diagnostic.py`: the planned offset is unwrapped to its representative nearest the true offset before cycle indices are compared. The previous version counted spurious mismatches when the offset error crossed 0 or C. New `p4_hazard.py` computes the first-mismatch probability.
+- `make_appendix_tables.py` prints Tables C.1 and C.2; Table C.3 comes from `build_tables_v2.py`.
+- Results of earlier experiment rounds (`sumo_results*` run files, the depth and decision-distance sweeps) and the unfinished real-topology scripts were removed from the main tree. They remain in the history at tag `pre-v2`.
+- README, CITATION.cff, and requirements.txt rewritten for the submitted paper.
+
 New files
 - queue_model.py: queue-aware planners STATIC-Q, MDP-Q, TDOPT-Q; the paper's MDP
   value (Proposition 7) on the SUMO grid; observed-platoon head model; fluid queue
