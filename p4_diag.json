@@ -1,0 +1,65 @@
+{
+ "violations": 0,
+ "total": 1920,
+ "zero_mm": 599,
+ "zero_mm_maxdev": 59.98239571190334,
+ "mmrate": {
+  "5": 0.09038461538461538,
+  "10": 0.17860576923076923,
+  "20": 0.2567307692307692,
+  "30": 0.3870192307692308,
+  "45": 0.4283653846153846,
+  "60": 0.47283653846153845
+ },
+ "per_sigma": {
+  "5": {
+   "zero_mm": 227,
+   "zero_mm_maxdev": 4.969784412311469,
+   "n_mm": 93,
+   "tight_median": 0.27969194845202133,
+   "tight_max": 0.9662548789626003,
+   "mmrate": 0.09038461538461538
+  },
+  "10": {
+   "zero_mm": 173,
+   "zero_mm_maxdev": 9.473137129095676,
+   "n_mm": 147,
+   "tight_median": 0.2640204014337034,
+   "tight_max": 0.9155654482768139,
+   "mmrate": 0.17860576923076923
+  },
+  "20": {
+   "zero_mm": 137,
+   "zero_mm_maxdev": 19.939359218103846,
+   "n_mm": 183,
+   "tight_median": 0.27195202244689004,
+   "tight_max": 0.7884981270736148,
+   "mmrate": 0.2567307692307692
+  },
+  "30": {
+   "zero_mm": 42,
+   "zero_mm_maxdev": 26.645740179770655,
+   "n_mm": 278,
+   "tight_median": 0.3498133069182837,
+   "tight_max": 0.7800447448554608,
+   "mmrate": 0.3870192307692308
+  },
+  "45": {
+   "zero_mm": 14,
+   "zero_mm_maxdev": 31.939361779291175,
+   "n_mm": 306,
+   "tight_median": 0.3415075296059312,
+   "tight_max": 0.7494394727221514,
+   "mmrate": 0.4283653846153846
+  },
+  "60": {
+   "zero_mm": 6,
+   "zero_mm_maxdev": 59.98239571190334,
+   "n_mm": 314,
+   "tight_median": 0.3235906499257778,
+   "tight_max": 0.7366273319956339,
+   "mmrate": 0.47283653846153845
+  }
+ },
+ "definition": "matched iff both timelines depart the crossing on the same green window (equal cycle index); uncontrolled right turns are matched by construction"
+}

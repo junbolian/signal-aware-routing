@@ -6,7 +6,10 @@ along p_hat; classify crossings matched/mismatched; check
 Corrected definition of a match (Proposition 4): a crossing is matched when the
 planned and the realized timeline depart it in the SAME CYCLE, that is when each
 of them either passes during that cycle's green window or waits for that window's
-onset; it is mismatched otherwise. The cycle is identified by the index
+onset; it is mismatched otherwise. Windows correspond when their onsets differ by at most
+sigma; the planned offset is therefore unwrapped to the representative nearest the true offset
+(an earlier version compared wrapped offsets and counted spurious mismatches when o + eta
+crossed 0 or C). The cycle is identified by the index
 k = floor((passage - offset - window_start) / C), which is the same integer for
 both timelines exactly when they leave on the same green. An uncontrolled right
 turn has no window and never waits, so it is matched by construction.
@@ -72,7 +75,10 @@ for sig in SIGMAS:
                 if fh:
                     matched = True          # uncontrolled right turn: no window, never waits
                 else:
-                    matched = cycle_index(ph, oh, sh) == cycle_index(pt, ot, st)
+                    # planned offset taken as the representative of o_hat nearest to o, so that
+                    # corresponding windows (onsets within sigma) get the same cycle index
+                    oh_u = ot + ((oh - ot + C / 2) % C - C / 2)
+                    matched = cycle_index(ph, oh_u, sh) == cycle_index(pt, ot, st)
                 if not matched:
                     M += 1; bound += rh
                     mm_cross += 1

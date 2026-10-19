@@ -132,18 +132,4 @@ for ax_,lab in ((a1,"a"),(a2,"b")):
 fig.tight_layout()
 fig.savefig("figures/fig4_lookahead.png"); plt.close(fig)
 
-# Fig 5 (sumo): restyle only, same content, keep filename fig8_sumo.png
-mod={}
-for f in glob.glob("sumo_results/mod_*.json"):
-    p=os.path.basename(f)[:-5].split("_"); meth="_".join(p[1:-1])
-    mod.setdefault(meth,[]).extend(x for x in json.load(open(f)) if x)
-names=[("SP-STATIC","STATIC","st"),("GREEDY","GREEDY","gr"),("LA-1","LA1","la"),
-       ("TD-OPT open","TDOPT_open","ff"),("TD-OPT replan","TDOPT_replan","mdp")]
-fig,ax=plt.subplots(figsize=(4.6,3.0))
-for i,(lab,key,c) in enumerate(names):
-    t,ci=mean_ci(mod[key])
-    ax.bar(i,t,yerr=ci,capsize=3,color=COL[c],width=.62)
-ax.set_xticks(range(5)); ax.set_xticklabels([n[0] for n in names],rotation=25,fontsize=7.5)
-ax.set_ylabel("Mean travel time (s)"); ax.set_ylim(1000,1440)
-fig.savefig("figures/fig8_sumo.png"); plt.close(fig)
 print("figures v2 done")
