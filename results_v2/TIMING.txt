@@ -1,0 +1,20 @@
+Timing projection (Task 0.5)
+
+Measured: network 1, seed 11, demand 1/10, four trips per run, six runs concurrently (plus one legacy check run),
+wall seconds from meta_dem10_<METHOD>_n1_11.json:
+   STATIC           67.6 s
+   LA1              72.1 s
+   MDP              73.2 s
+   TDOPT_replan     66.5 s
+   TDOPT-Q          76.9 s
+   MDP-Q            74.7 s
+
+Runs per network and seed: 95  (order: 95)
+   GREEDY 2, LA1 11, LA2 6, LA3 6, MDP 11, MDP-Q 8, MDP-Q-OP 4, STATIC 11, STATIC-Q 8, STATIC-TRAFFIC 1, STATIC-TRAFFIC-RT 3, TDOPT-Q 11, TDOPT_open 2, TDOPT_replan 11
+Core-seconds per network and seed (demand 1/10 time for every level): 6885
+
+cores 24, concurrent slots 22, contention allowance x2.0
+K = 10: 3800 runs, 76.5 core-hours, projected wall time 7.0 h
+K =  8: 3040 runs, 61.2 core-hours, projected wall time 5.6 h
+
+Rule: K = 8 only if the K = 10 projection exceeds 72 h. Projection 7.0 h -> K = 10.
