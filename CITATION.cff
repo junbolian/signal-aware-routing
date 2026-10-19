@@ -14,11 +14,12 @@ preferred-citation:
   authors:
     - family-names: Lian
       given-names: Junbo Jacob
-    - family-names: Liu
-      given-names: Xing
     - family-names: Chen
       given-names: Zheng
     - family-names: Zhang
       given-names: Chaoyu
+    - family-names: Liu
+      given-names: Xing
   year: 2026
+  url: "https://papers.ssrn.com/sol3/papers.cfm?abstract_id=7368578"
   notes: "Submitted to Transportation Research Part C: Emerging Technologies"
