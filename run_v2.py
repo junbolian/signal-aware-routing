@@ -73,6 +73,8 @@ def main():
     ap.add_argument("--K", type=int, default=10)
     ap.add_argument("--nets", type=int, nargs="*")
     ap.add_argument("--seeds", type=int, nargs="*", default=[11, 12, 13, 14])
+    ap.add_argument("--all-seeds", type=int, nargs="*", default=[11, 12, 13, 14],
+                    help="seeds of the whole sample: a kernel waits for the source cells of every one")
     ap.add_argument("--jobs", type=int, default=1)
     ap.add_argument("--port-base", type=int)
     ap.add_argument("--no-wait", action="store_true")
@@ -114,11 +116,11 @@ def main():
         srcs = [m for m in KSOURCES if m in free.get(den, [])]
         kernels.append({"den": den, "tag": "", "sources": srcs,
                         "files": [kfile(den, "", 0), kfile(den, "", 1)],
-                        "needs": [out(den, m, j, s) for m in srcs for j in allnets for s in a.seeds]})
+                        "needs": [out(den, m, j, s) for m in srcs for j in allnets for s in a.all_seeds]})
     for den in op:
         kernels.append({"den": den, "tag": "op", "sources": ["MDPQ"],
                         "files": [kfile(den, "op", 0), kfile(den, "op", 1)],
-                        "needs": [out(den, "MDP-Q", j, s) for j in allnets for s in a.seeds]})
+                        "needs": [out(den, "MDP-Q", j, s) for j in allnets for s in a.all_seeds]})
     if a.plan:
         for st, name in enumerate(("kernel-free", "kernel (STATIC-Q, MDP-Q)", "on-policy kernel (MDPQOP)")):
             cs = [c for c in cells if c[0] == st]
@@ -126,6 +128,10 @@ def main():
         return
 
     log = open(f"{res}/driver_log.txt", "a")
+    for k in kernels:     # a lock left by a killed driver would block its kernel forever
+        lock = f"{res}/.lock_kernel_dem{k['den']}{k['tag']}"
+        if os.path.isdir(lock) and time.time() - os.path.getmtime(lock) > 1800:
+            os.rmdir(lock)
 
     def say(msg):
         line = f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] {msg}"
@@ -191,6 +197,13 @@ def main():
             if not running:
                 if a.no_wait:
                     say(f"{len(pending)} cells blocked on kernels; --no-wait set, stopping")
+                    break
+                lost = {out(*c[1:5]) for c in failed}
+                dead = [k for k in kernels if not all(os.path.exists(f) for f in k["files"])
+                        and any(f in lost for f in k["needs"])]
+                if dead:
+                    say(f"{len(pending)} cells blocked on kernels whose source cells failed in this process "
+                        f"({', '.join('dem%d%s' % (k['den'], k['tag']) for k in dead)}); stopping, rerun to retry")
                     break
                 if time.time() - last_wait_msg > 1800:
                     say(f"waiting for other processes: {len(pending)} cells blocked on kernels")
