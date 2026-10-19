@@ -77,6 +77,8 @@ Run every command from the repository root.
 | Tables 4 to 7 and C.3 | `python aggregate_v2.py`, then `python build_tables_v2.py results_v2` | `results_v2/summary_v2.json`, printed rows |
 | Figures 6 and 7 | `python make_figures_v3.py results_v2 figures` | `figures/fig6_sumo_v2.pdf`, `figures/fig7_depth_v2.pdf` |
 
+`signal_routing.py`, `extend_lookahead.py`, and `mdp_policy.py` also write draft figures into `figures/`, and `signal_routing.py` writes its own version of `figures/fig2_voi.png`. Run `python make_figures.py` after them to restore Figures 2 to 5 as they appear in the paper.
+
 Figure 1 is a schematic of the model and has no data source.
 
 ## SUMO sample of record
