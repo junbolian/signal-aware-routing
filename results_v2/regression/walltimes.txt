@@ -1,5 +1,0 @@
-LA1 exit=0 wall_s=41
-TDOPT_replan exit=0 wall_s=45
-LA2 exit=0 wall_s=45
-STATIC exit=0 wall_s=45
-TDOPT-Q exit=0 wall_s=51
